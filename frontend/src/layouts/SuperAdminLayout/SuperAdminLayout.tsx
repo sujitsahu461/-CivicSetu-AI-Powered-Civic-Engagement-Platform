@@ -46,11 +46,13 @@ export const SuperAdminLayout: React.FC = () => {
     { label: 'Settings', path: '#settings', icon: 'settings', isModal: 'settings' },
   ];
 
+  const isUserDirectory = location.pathname.startsWith('/superadmin/users');
+
   return (
     <div className={s.layoutContainer}>
       {/* ================= TOP NAVBAR ================= */}
       <header className={s.navbar}>
-        <div className={s.navInner}>
+        <div className={`${s.navInner} ${isUserDirectory ? s.navInnerFluid : ''}`}>
           {/* Left: Brand & Portal Badge */}
           <Link to="/superadmin/dashboard" className={s.brandGroup} title="CivicSetu Super Admin Portal">
             <div className={s.brandLogo}>
@@ -65,37 +67,49 @@ export const SuperAdminLayout: React.FC = () => {
             </div>
           </Link>
 
-          {/* Center: Navigation Links */}
-          <nav className={s.navLinks}>
-            {navLinks.map((item) => {
-              if (item.isModal) {
-                const isModalOpen = activeModal === item.isModal;
+          {/* Center: Global Search Bar for Directory, or Navigation Links for Dashboard */}
+          {isUserDirectory ? (
+            <div className={s.centerSearchBar}>
+              <Icon name="search" size={17} className={s.centerSearchIcon} />
+              <input
+                type="text"
+                placeholder="Search users, complaints, departments, or anything..."
+                className={s.centerSearchInput}
+              />
+              <span className={s.kbdShortcut}>⌘ K</span>
+            </div>
+          ) : (
+            <nav className={s.navLinks}>
+              {navLinks.map((item) => {
+                if (item.isModal) {
+                  const isModalOpen = activeModal === item.isModal;
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      className={`${s.navLink} ${isModalOpen ? s.activeNavLink : ''}`}
+                      onClick={() => setActiveModal(item.isModal as 'audit' | 'settings')}
+                    >
+                      <Icon name={item.icon} size={17} />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                }
+
+                const isActive = location.pathname === item.path;
                 return (
-                  <button
-                    key={item.label}
-                    type="button"
-                    className={`${s.navLink} ${isModalOpen ? s.activeNavLink : ''}`}
-                    onClick={() => setActiveModal(item.isModal as 'audit' | 'settings')}
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`${s.navLink} ${isActive ? s.activeNavLink : ''}`}
                   >
                     <Icon name={item.icon} size={17} />
                     <span>{item.label}</span>
-                  </button>
+                  </Link>
                 );
-              }
-
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`${s.navLink} ${isActive ? s.activeNavLink : ''}`}
-                >
-                  <Icon name={item.icon} size={17} />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+              })}
+            </nav>
+          )}
 
           {/* Right: User Controls & Notification */}
           <div className={s.navRight}>
@@ -120,7 +134,10 @@ export const SuperAdminLayout: React.FC = () => {
                 aria-label="User Menu"
               >
                 <div className={s.userAvatar}>S</div>
-                <span className={s.userName}>Super Admin</span>
+                <div className={s.userMetaCol}>
+                  <span className={s.userName}>Super Admin</span>
+                  <span className={s.userRoleSub}>System Administrator</span>
+                </div>
                 <Icon
                   name="expand_more"
                   size={18}
@@ -231,7 +248,7 @@ export const SuperAdminLayout: React.FC = () => {
       </header>
 
       {/* ================= MAIN WORKSPACE ================= */}
-      <main className={s.mainWorkspace}>
+      <main className={`${s.mainWorkspace} ${isUserDirectory ? s.mainWorkspaceUserPage : ''}`}>
         <Outlet />
       </main>
 
