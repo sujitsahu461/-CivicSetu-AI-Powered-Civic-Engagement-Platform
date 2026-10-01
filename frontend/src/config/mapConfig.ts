@@ -164,19 +164,29 @@ export const KNOWN_LOCALITIES: LocationPreset[] = [
 
 // Clean, high-resolution tile layers with ZERO watermark
 export const MAP_TILE_LAYERS = {
+  voyager: {
+    name: 'CartoDB Voyager (Smooth & Fast)',
+    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    maxZoom: 20,
+    subdomains: 'abcd',
+  },
   osm: {
-    name: 'OpenStreetMap (Clean Standard)',
+    name: 'OpenStreetMap (Standard)',
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
+    subdomains: 'abc',
   },
   esri: {
     name: 'Esri World Street Map (High-Res)',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap',
     maxZoom: 19,
+    subdomains: 'abc',
   },
 };
+
 
 /**
  * Checks whether coordinates correspond to the ISP routing gateway in Jajpur Road.

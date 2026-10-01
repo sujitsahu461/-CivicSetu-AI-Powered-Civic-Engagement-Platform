@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import useComplaintStore from '../store/complaintStore';
 import IncidentMap from '../components/map/IncidentMap';
-import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Badge from '../components/ui/Badge';
 import Icon from '../components/ui/Icon';
 import { Complaint } from '../types/complaint';
-import { formatDate, truncateText } from '../utils/formatters';
+import { formatDate } from '../utils/formatters';
 import s from './MapView.module.css';
 
 const CATEGORY_OPTIONS = [
@@ -34,7 +33,7 @@ export const MapView: React.FC = () => {
   const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || '';
 
-  const { complaints, isLoading, fetchComplaints } = useComplaintStore();
+  const { complaints, fetchComplaints } = useComplaintStore();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState(initialCategory);
@@ -42,18 +41,21 @@ export const MapView: React.FC = () => {
   const [urgentOnly, setUrgentOnly] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Complaint | null>(null);
 
-  const loadMapComplaints = (silent = false) => {
-    fetchComplaints(
-      {
-        category: categoryFilter || undefined,
-        status: statusFilter || undefined,
-      },
-      silent
-    );
-  };
+  const loadMapComplaints = useCallback(
+    (silent = false) => {
+      fetchComplaints(
+        {
+          category: categoryFilter || undefined,
+          status: statusFilter || undefined,
+        },
+        silent
+      );
+    },
+    [categoryFilter, statusFilter, fetchComplaints]
+  );
 
   useEffect(() => {
-    loadMapComplaints(complaints.length > 0);
+    loadMapComplaints(false);
     const interval = setInterval(() => {
       loadMapComplaints(true);
     }, 15000);
@@ -63,7 +65,26 @@ export const MapView: React.FC = () => {
       clearInterval(interval);
       window.removeEventListener('focus', onFocus);
     };
-  }, [categoryFilter, statusFilter]);
+  }, [loadMapComplaints]);
+
+  // Dynamic Geographic & Operational Insights
+  const stats = useMemo(() => {
+    const total = complaints.length;
+    const geocoded = complaints.filter(
+      (c) =>
+        c.latitude !== null &&
+        c.longitude !== null &&
+        !isNaN(Number(c.latitude)) &&
+        !isNaN(Number(c.longitude))
+    ).length;
+    const pending = complaints.filter((c) => c.status === 'PENDING').length;
+    const inProgress = complaints.filter(
+      (c) => c.status === 'IN_PROGRESS' || c.status === 'ASSIGNED'
+    ).length;
+    const resolved = complaints.filter((c) => c.status === 'RESOLVED').length;
+    const urgent = complaints.filter((c) => c.priority === 'URGENT').length;
+    return { total, geocoded, pending, inProgress, resolved, urgent };
+  }, [complaints]);
 
   const filteredComplaints = complaints.filter((c) => {
     const matchesSearch =
@@ -103,7 +124,7 @@ export const MapView: React.FC = () => {
             <Icon name="explore" size={24} />
           </div>
           <div>
-            <h1 className={s.title}>City-Wide Incident GIS Radar</h1>
+            <h1 className={s.title}>City-Wide Incident GIS Radar & Map Insights</h1>
             <p className={s.subtitle}>
               Live spatial map of citizen grievances, nodal dispatch units, and critical hazard hotspots.
             </p>
@@ -118,6 +139,82 @@ export const MapView: React.FC = () => {
         </div>
       </div>
 
+      {/* GIS Insights Metric Strip */}
+      <div className={s.insightsBar}>
+        <div className={s.insightCard}>
+          <div className={s.insightIcon} style={{ background: '#eff6ff', color: '#2563eb' }}>
+            <Icon name="layers" size={20} />
+          </div>
+          <div className={s.insightInfo}>
+            <span className={s.insightValue}>{stats.total}</span>
+            <span className={s.insightLabel}>Total Grievances</span>
+          </div>
+        </div>
+
+        <div className={s.insightCard}>
+          <div className={s.insightIcon} style={{ background: '#ecfdf5', color: '#10b981' }}>
+            <Icon name="pin_drop" size={20} />
+          </div>
+          <div className={s.insightInfo}>
+            <span className={s.insightValue}>{stats.geocoded}</span>
+            <span className={s.insightLabel}>Geocoded on Radar</span>
+          </div>
+        </div>
+
+        <div className={s.insightCard}>
+          <div className={s.insightIcon} style={{ background: '#fffbeb', color: '#d97706' }}>
+            <Icon name="pending_actions" size={20} />
+          </div>
+          <div className={s.insightInfo}>
+            <span className={s.insightValue}>{stats.pending}</span>
+            <span className={s.insightLabel}>Pending Triage</span>
+          </div>
+        </div>
+
+        <div className={s.insightCard}>
+          <div className={s.insightIcon} style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+            <Icon name="engineering" size={20} />
+          </div>
+          <div className={s.insightInfo}>
+            <span className={s.insightValue}>{stats.inProgress}</span>
+            <span className={s.insightLabel}>Work in Progress</span>
+          </div>
+        </div>
+
+        <div className={s.insightCard}>
+          <div className={s.insightIcon} style={{ background: '#f0fdf4', color: '#16a34a' }}>
+            <Icon name="task_alt" size={20} />
+          </div>
+          <div className={s.insightInfo}>
+            <span className={s.insightValue}>{stats.resolved}</span>
+            <span className={s.insightLabel}>Resolved & Closed</span>
+          </div>
+        </div>
+
+        <div
+          className={`${s.insightCard} ${s.urgentClickable}`}
+          style={{
+            cursor: 'pointer',
+            borderColor: urgentOnly ? '#ef4444' : '#e2e8f0',
+            background: urgentOnly ? '#fef2f2' : '#ffffff',
+          }}
+          onClick={() => setUrgentOnly(!urgentOnly)}
+          title="Click to toggle urgent filter"
+        >
+          <div className={s.insightIcon} style={{ background: '#fef2f2', color: '#ef4444' }}>
+            <Icon name="warning" size={20} />
+          </div>
+          <div className={s.insightInfo}>
+            <span className={s.insightValue} style={{ color: '#dc2626' }}>
+              {stats.urgent}
+            </span>
+            <span className={s.insightLabel} style={{ color: urgentOnly ? '#dc2626' : '#64748b' }}>
+              {urgentOnly ? 'Filtering Urgent' : 'Urgent Hazards'}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Filter Ribbon */}
       <div className={s.filterRibbon}>
         <div className={s.searchBox}>
@@ -128,6 +225,7 @@ export const MapView: React.FC = () => {
             leftIcon={<Icon name="search" size={16} />}
           />
         </div>
+
 
         <div className={s.selectsRow}>
           <div className={s.selectWrap}>

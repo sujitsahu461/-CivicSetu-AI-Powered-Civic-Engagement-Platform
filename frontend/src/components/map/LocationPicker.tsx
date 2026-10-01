@@ -52,15 +52,38 @@ const MapEvents: React.FC<{
   return null;
 };
 
-// Smooth recenter helper
-const RecenterView: React.FC<{ position: [number, number]; zoom?: number }> = ({
+// Smooth recenter and auto-size invalidator helper
+const MapLifecycle: React.FC<{ position: [number, number]; zoom?: number }> = ({
   position,
   zoom,
 }) => {
   const map = useMap();
+
   useEffect(() => {
-    map.flyTo(position, zoom ?? map.getZoom(), { duration: 0.9 });
+    // Invalidate size immediately, and at multiple intervals as layout settles
+    map.invalidateSize();
+    const t1 = setTimeout(() => map.invalidateSize(), 50);
+    const t2 = setTimeout(() => map.invalidateSize(), 150);
+    const t3 = setTimeout(() => map.invalidateSize(), 400);
+    const t4 = setTimeout(() => map.invalidateSize(), 800);
+
+    const onResize = () => map.invalidateSize();
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [map]);
+
+  useEffect(() => {
+    map.flyTo(position, zoom ?? map.getZoom(), { duration: 0.8 });
+    setTimeout(() => map.invalidateSize(), 60);
   }, [position, zoom, map]);
+
   return null;
 };
 
@@ -90,7 +113,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     return hasValidInitial ? '' : INDIA_DEFAULT_ADDRESS;
   });
 
-  const [activeTileLayer, setActiveTileLayer] = useState<'osm' | 'esri'>('osm');
+  const [activeTileLayer, setActiveTileLayer] = useState<'osm' | 'esri' | 'voyager'>('osm');
+
   const [isGeocoding, setIsGeocoding] = useState<boolean>(false);
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -350,11 +374,21 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           <button
             type="button"
             className={s.layerToggleBtn}
-            onClick={() => setActiveTileLayer((prev) => (prev === 'osm' ? 'esri' : 'osm'))}
-            title="Switch Map Tile Provider (Zero Watermark)"
+            onClick={() =>
+              setActiveTileLayer((prev) =>
+                prev === 'osm' ? 'esri' : prev === 'esri' ? 'voyager' : 'osm'
+              )
+            }
+            title="Switch Map Tile Provider"
           >
             <Icon name="layers" size={14} />
-            <span>{activeTileLayer === 'osm' ? 'OSM Standard' : 'Esri Street'}</span>
+            <span>
+              {activeTileLayer === 'osm'
+                ? 'OSM Standard'
+                : activeTileLayer === 'esri'
+                ? 'Esri Map'
+                : 'Voyager HD'}
+            </span>
           </button>
 
           <Button
@@ -443,11 +477,13 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             attribution={currentTileConfig.attribution}
             url={currentTileConfig.url}
             maxZoom={currentTileConfig.maxZoom}
+            subdomains={(currentTileConfig as any).subdomains || 'abc'}
           />
 
-          <RecenterView position={position} zoom={mapZoom} />
+          <MapLifecycle position={position} zoom={mapZoom} />
 
           <MapEvents onMapClick={handlePositionChange} />
+
 
           <Marker
             draggable={true}

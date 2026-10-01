@@ -7,7 +7,7 @@ import Badge from '../../components/ui/Badge';
 import Icon from '../../components/ui/Icon';
 import { showToast } from '../../components/ui/Toast';
 import useAuthStore from '../../store/authStore';
-import { smartDetectGps } from '../../config/mapConfig';
+import { smartDetectGps, MAP_TILE_LAYERS } from '../../config/mapConfig';
 import { formatDate, truncateText } from '../../utils/formatters';
 import s from './IncidentMap.module.css';
 
@@ -18,6 +18,31 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
+
+// Auto-resize invalidator helper for seamless and smooth container rendering
+const AutoInvalidateSize: React.FC = () => {
+  const map = useMap();
+  useEffect(() => {
+    map.invalidateSize();
+    const t1 = setTimeout(() => map.invalidateSize(), 50);
+    const t2 = setTimeout(() => map.invalidateSize(), 150);
+    const t3 = setTimeout(() => map.invalidateSize(), 400);
+    const t4 = setTimeout(() => map.invalidateSize(), 800);
+
+    const onResize = () => map.invalidateSize();
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [map]);
+  return null;
+};
+
 
 interface IncidentMapProps {
   complaints: Complaint[];
@@ -171,6 +196,9 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
   const { user } = useAuthStore();
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultCenter);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [activeTileLayer, setActiveTileLayer] = useState<'osm' | 'esri' | 'voyager'>('osm');
+
+  const currentTileConfig = MAP_TILE_LAYERS[activeTileLayer];
 
   // Find currently selected complaint
   const selectedComplaint = useMemo(
@@ -236,18 +264,18 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
           <button
             type="button"
             className={s.clusterBtn}
-            onClick={() => jumpToCluster(19.047644, 83.834461)}
-            title="Jump to Gunupur Incidents"
-          >
-            Gunupur
-          </button>
-          <button
-            type="button"
-            className={s.clusterBtn}
             onClick={() => jumpToCluster(21.4669, 83.9812)}
             title="Jump to Sambalpur Incidents"
           >
             Sambalpur
+          </button>
+          <button
+            type="button"
+            className={s.clusterBtn}
+            onClick={() => jumpToCluster(19.047644, 83.834461)}
+            title="Jump to Gunupur Incidents"
+          >
+            Gunupur
           </button>
           <button
             type="button"
@@ -257,7 +285,35 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
           >
             Bhubaneswar
           </button>
+          <button
+            type="button"
+            className={s.clusterBtn}
+            onClick={() => jumpToCluster(19.1717, 83.4163)}
+            title="Jump to Rayagada Incidents"
+          >
+            Rayagada
+          </button>
         </div>
+
+        <button
+          type="button"
+          className={s.layerBtn}
+          onClick={() =>
+            setActiveTileLayer((prev) =>
+              prev === 'osm' ? 'esri' : prev === 'esri' ? 'voyager' : 'osm'
+            )
+          }
+          title="Switch Map Tile Provider"
+        >
+          <Icon name="layers" size={14} />
+          <span>
+            {activeTileLayer === 'osm'
+              ? 'OSM Standard'
+              : activeTileLayer === 'esri'
+              ? 'Esri Map'
+              : 'Voyager HD'}
+          </span>
+        </button>
 
         <button
           type="button"
@@ -285,14 +341,18 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
         className={s.leafletContainer}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
+          key={activeTileLayer}
+          attribution={currentTileConfig.attribution}
+          url={currentTileConfig.url}
+          maxZoom={currentTileConfig.maxZoom}
+          subdomains={(currentTileConfig as any).subdomains || 'abc'}
         />
 
+        <AutoInvalidateSize />
         <MapRecenter center={mapCenter} />
         <FitBoundsToMarkers complaints={geocodedComplaints} selectedComplaintId={selectedComplaintId} />
         <FlyToSelected selectedComplaint={selectedComplaint} />
+
 
         {/* User GPS Marker */}
         {userLocation && (
