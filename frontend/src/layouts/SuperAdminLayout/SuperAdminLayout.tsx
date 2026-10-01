@@ -47,12 +47,14 @@ export const SuperAdminLayout: React.FC = () => {
   ];
 
   const isUserDirectory = location.pathname.startsWith('/superadmin/users');
+  const isAnalyticsPage = location.pathname.startsWith('/superadmin/analytics');
+  const isFluidPage = isUserDirectory || isAnalyticsPage;
 
   return (
     <div className={s.layoutContainer}>
       {/* ================= TOP NAVBAR ================= */}
       <header className={s.navbar}>
-        <div className={`${s.navInner} ${isUserDirectory ? s.navInnerFluid : ''}`}>
+        <div className={`${s.navInner} ${isFluidPage ? s.navInnerFluid : ''}`}>
           {/* Left: Brand & Portal Badge */}
           <Link to="/superadmin/dashboard" className={s.brandGroup} title="CivicSetu Super Admin Portal">
             <div className={s.brandLogo}>
@@ -248,7 +250,7 @@ export const SuperAdminLayout: React.FC = () => {
       </header>
 
       {/* ================= MAIN WORKSPACE ================= */}
-      <main className={`${s.mainWorkspace} ${isUserDirectory ? s.mainWorkspaceUserPage : ''}`}>
+      <main className={`${s.mainWorkspace} ${isFluidPage ? s.mainWorkspaceUserPage : ''}`}>
         <Outlet />
       </main>
 
