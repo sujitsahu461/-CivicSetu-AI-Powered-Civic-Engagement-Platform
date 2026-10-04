@@ -5,7 +5,7 @@ import Icon from './Icon';
 import s from './PortalSwitcher.module.css';
 
 export const PortalSwitcher: React.FC = () => {
-  const { user, switchRole, isLoading } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -21,14 +21,21 @@ export const PortalSwitcher: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handlePortalSwitch = async (role: 'CITIZEN' | 'AUTHORITY' | 'SUPER_ADMIN', targetPath: string) => {
+  const handlePortalSwitch = (role: 'CITIZEN' | 'AUTHORITY' | 'SUPER_ADMIN', targetPath: string) => {
     setIsOpen(false);
-    try {
-      await switchRole(role);
-    } catch (e) {
-      console.warn('Portal switch warning:', e);
+    if (user?.role === role || user?.role === 'SUPER_ADMIN') {
+      navigate(targetPath);
+      return;
     }
-    window.location.href = targetPath;
+    if (role === 'CITIZEN') {
+      navigate('/login/citizen');
+    } else if (role === 'AUTHORITY') {
+      navigate('/login/authority');
+    } else if (role === 'SUPER_ADMIN') {
+      navigate('/login/superadmin');
+    } else {
+      navigate(targetPath);
+    }
   };
 
   const getPortalDetails = () => {

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import useComplaintStore from '../store/complaintStore';
 
 export function useComplaints(params?: Record<string, any>) {
-  const { complaints, selectedComplaint, isLoading, error, fetchComplaints, fetchComplaintById, submitComplaint, updateStatus } = useComplaintStore();
+  const { complaints, selectedComplaint, isLoading, error, fetchComplaints, fetchComplaintById, submitComplaint } = useComplaintStore();
 
   useEffect(() => {
     fetchComplaints(params);
@@ -16,7 +16,6 @@ export function useComplaints(params?: Record<string, any>) {
     refetch: () => fetchComplaints(params),
     fetchComplaintById,
     submitComplaint,
-    updateStatus,
   };
 }
 

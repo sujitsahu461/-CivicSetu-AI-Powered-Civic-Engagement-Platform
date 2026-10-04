@@ -38,24 +38,26 @@ class RegisterSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=150)
     phone = serializers.CharField(max_length=20, required=False, allow_blank=True, allow_null=True)
     role = serializers.ChoiceField(
-        choices=(UserRole.CITIZEN, UserRole.AUTHORITY),
+        choices=(UserRole.CITIZEN, UserRole.AUTHORITY, UserRole.SUPER_ADMIN),
         default=UserRole.CITIZEN,
         required=False,
     )
     address = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True)
     department = serializers.CharField(max_length=100, required=False, allow_blank=True, allow_null=True)
     designation = serializers.CharField(max_length=100, required=False, allow_blank=True, allow_null=True)
+    security_key = serializers.CharField(max_length=100, required=False, allow_blank=True, allow_null=True)
 
     def validate_email(self, value):
         normalized = User.objects.normalize_email(value)
         if User.objects.filter(email__iexact=normalized).exists():
-            raise serializers.ValidationError("An account with this email address already exists.")
+            raise serializers.ValidationError("An account with this email address already exists. Please sign in instead or use another email.")
         return normalized
 
     def validate_phone(self, value):
-        if value and User.objects.filter(phone=value).exists():
-            raise serializers.ValidationError("An account with this phone number already exists.")
-        return value
+        val = (value or "").strip()
+        if val and User.objects.filter(phone=val).exists():
+            raise serializers.ValidationError("This phone number is already registered to another account. Please use a different phone or leave blank.")
+        return val or None
 
     def validate_password(self, value):
         try:
@@ -65,7 +67,19 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError(messages)
         return value
 
+    def validate(self, attrs):
+        role = attrs.get("role", UserRole.CITIZEN)
+        if role == UserRole.SUPER_ADMIN:
+            sec_key = (attrs.get("security_key") or "").strip()
+            valid_keys = {"CIVICSETU-ADMIN-2025", "ADMIN@CIVICSETU", "SUPERADMIN2025"}
+            if not sec_key:
+                raise serializers.ValidationError({"security_key": "Master Administrator Security Passkey is required (e.g. CIVICSETU-ADMIN-2025)."})
+            if sec_key not in valid_keys:
+                raise serializers.ValidationError({"security_key": "Invalid Master Administrator Security Passkey. Access Denied. Use CIVICSETU-ADMIN-2025."})
+        return attrs
+
     def create(self, validated_data):
+        validated_data.pop("security_key", None)
         return UserRegistrationService.register_user(**validated_data)
 
 

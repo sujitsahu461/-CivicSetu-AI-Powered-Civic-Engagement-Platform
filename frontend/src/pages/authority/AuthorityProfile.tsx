@@ -214,7 +214,7 @@ export const AuthorityProfile: React.FC = () => {
             </div>
 
             <div className={s.cardActions}>
-              <Button type="submit" variant="authority" size="md" isLoading={profileLoading}>
+              <Button type="submit" variant="primary" size="md" isLoading={profileLoading}>
                 Save Profile Changes
               </Button>
             </div>

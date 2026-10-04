@@ -1,8 +1,24 @@
+import React from 'react';
+
 /**
  * Icon — Material Symbols Outlined wrapper
  * Usage: <Icon name="account_balance" fill size={24} />
  */
-export default function Icon({ name, fill = false, size = 24, className = '', style = {} }) {
+export interface IconProps {
+  name: string;
+  fill?: boolean;
+  size?: number | string;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+export const Icon: React.FC<IconProps> = ({
+  name,
+  fill = false,
+  size = 24,
+  className = '',
+  style = {},
+}) => {
   return (
     <span
       className={`material-symbols-outlined${fill ? ' icon-fill' : ''} ${className}`}
@@ -28,5 +44,7 @@ export default function Icon({ name, fill = false, size = 24, className = '', st
     >
       {name}
     </span>
-  )
-}
+  );
+};
+
+export default Icon;

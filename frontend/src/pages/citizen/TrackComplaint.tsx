@@ -130,9 +130,10 @@ export const TrackComplaint: React.FC = () => {
     if (!selectedComplaint) return;
     setIsSubmittingFeedback(true);
     try {
-      await feedbackService.submitFeedback(selectedComplaint.public_id, {
+      await feedbackService.submitFeedback({
+        complaint_public_id: selectedComplaint.public_id,
         rating,
-        feedback_text: feedbackNotes,
+        comments: feedbackNotes,
       });
       success('Thank you for rating municipal grievance redressal!');
       setFeedbackSubmitted(true);

@@ -82,8 +82,18 @@ export const CitizenDashboard: React.FC = () => {
 
   return (
     <div className={s.container}>
-      {/* ================= HERO WELCOME BANNER ================= */}
+      {/* ================= HERO WELCOME BANNER (GREENERY & ECO-FRIENDLY MERGED) ================= */}
       <section className={s.heroBanner}>
+        {/* Full-width merged background eco illustration */}
+        <div className={s.heroBgWrapper}>
+          <img
+            src="/green-eco-city.jpg"
+            alt="Cleaner Cities Greener Tomorrow"
+            className={s.heroBgImg}
+          />
+          <div className={s.heroBgOverlay} />
+        </div>
+
         <div className={s.heroLeft}>
           <div className={s.heroTag}>
             <span className={s.leafIcon}>🌿</span>
@@ -110,11 +120,6 @@ export const CitizenDashboard: React.FC = () => {
               <Icon name="arrow_forward" size={16} />
             </Link>
           </div>
-        </div>
-
-        {/* City Illustration */}
-        <div className={s.heroIllustration}>
-          <img src="/hero-city.jpg" alt="City Skyline" className={s.heroImg} />
         </div>
 
         {/* Right Info Card */}
@@ -197,7 +202,7 @@ export const CitizenDashboard: React.FC = () => {
                   <div className={s.cardThumb}>
                     {item.images && item.images.length > 0 ? (
                       <img
-                        src={item.images[0]?.image || item.images[0]}
+                        src={typeof item.images[0] === 'string' ? item.images[0] : (item.images[0] as any)?.image}
                         alt=""
                         className={s.thumbImg}
                       />

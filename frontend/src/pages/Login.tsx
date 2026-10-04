@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import authService from '../services/auth.service';
@@ -6,6 +6,7 @@ import { useToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Icon from '../components/ui/Icon';
+import ArithmeticCaptcha from '../components/auth/ArithmeticCaptcha';
 import s from './Login.module.css';
 
 export const Login: React.FC = () => {
@@ -21,58 +22,16 @@ export const Login: React.FC = () => {
   const [formError, setFormError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Captcha Verification state
-  const [captchaSvg, setCaptchaSvg] = useState('');
-  const [captchaKey, setCaptchaKey] = useState('');
-  const [captchaInput, setCaptchaInput] = useState('');
-  const [captchaLoading, setCaptchaLoading] = useState(false);
-  const [captchaFallbackCode, setCaptchaFallbackCode] = useState('');
+  // Arithmetic Captcha state
+  const [captchaKey, setCaptchaKey] = useState('local');
+  const [captchaCode, setCaptchaCode] = useState('');
+  const [isCaptchaValid, setIsCaptchaValid] = useState(false);
 
-  // Fallback SVG challenge generator for offline/network interruption
-  const generateFallbackSvg = (code: string) => {
-    const colors = ['#4ade80', '#60a5fa', '#fbbf24', '#f472b6', '#a78bfa', '#38bdf8'];
-    const chars = code.split('');
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="48" viewBox="0 0 180 48" style="background: #0f172a; border-radius: 8px; user-select: none;"><rect width="180" height="48" rx="8" fill="#0f172a" /><line x1="10" y1="20" x2="170" y2="28" stroke="#334155" stroke-width="2" />${chars.map((c, i) => `<text x="${20 + i * 26}" y="30" fill="${colors[i % colors.length]}" font-family="monospace" font-weight="800" font-size="24">${c}</text>`).join('')}</svg>`;
-  };
-
-  const loadCaptcha = async () => {
-    setCaptchaLoading(true);
-    try {
-      const res = await authService.getCaptcha();
-      setCaptchaKey(res.captcha_key);
-      setCaptchaSvg(res.captcha_svg);
-      setCaptchaFallbackCode('');
-      setCaptchaInput('');
-    } catch {
-      const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-      let code = '';
-      for (let i = 0; i < 6; i++) {
-        code += chars[Math.floor(Math.random() * chars.length)];
-      }
-      setCaptchaFallbackCode(code);
-      setCaptchaKey('local');
-      setCaptchaSvg(generateFallbackSvg(code));
-      setCaptchaInput('');
-    } finally {
-      setCaptchaLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadCaptcha();
+  const handleCaptchaVerify = useCallback((key: string, code: string, isValid: boolean) => {
+    setCaptchaKey(key);
+    setCaptchaCode(code);
+    setIsCaptchaValid(isValid);
   }, []);
-
-  const handleSpeakCaptcha = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const textToSpeak = captchaFallbackCode
-        ? captchaFallbackCode.split('').join('. ')
-        : 'Please enter the six characters security captcha code shown in the image';
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.rate = 0.85;
-      window.speechSynthesis.speak(utterance);
-    }
-  };
 
   const handleQuickFill = (role: 'CITIZEN' | 'AUTHORITY' | 'SUPER_ADMIN') => {
     setRoleTab(role);
@@ -87,9 +46,6 @@ export const Login: React.FC = () => {
       setEmail('admin@civicsetu.gov.in');
       setPassword('Admin@12345');
     }
-    if (captchaFallbackCode) {
-      setCaptchaInput(captchaFallbackCode);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,14 +57,8 @@ export const Login: React.FC = () => {
       return;
     }
 
-    if (!captchaInput.trim()) {
-      setFormError('Please enter the security verification captcha code.');
-      return;
-    }
-
-    if (captchaFallbackCode && captchaInput.trim().toUpperCase() !== captchaFallbackCode) {
-      setFormError('Incorrect captcha code. Please enter the characters shown in the image.');
-      loadCaptcha();
+    if (!isCaptchaValid) {
+      setFormError('Please solve the arithmetic security problem correctly.');
       return;
     }
 
@@ -119,7 +69,7 @@ export const Login: React.FC = () => {
         email,
         password,
         captcha_key: captchaKey,
-        captcha_code: captchaInput.trim().toUpperCase(),
+        captcha_code: captchaCode,
       });
       success(`Welcome back, ${user.full_name || 'User'}!`);
 
@@ -134,7 +84,6 @@ export const Login: React.FC = () => {
       const msg = err.message || err.captcha_code || 'Email or password is incorrect. Please check your credentials.';
       setFormError(msg);
       toastError(msg);
-      loadCaptcha();
     } finally {
       setLoading(false);
     }
@@ -285,7 +234,7 @@ export const Login: React.FC = () => {
                 <Input
                   label="Email Address"
                   type="email"
-                  placeholder="e.g. sujit@example.com"
+                  placeholder="e.g. resident@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -315,58 +264,8 @@ export const Login: React.FC = () => {
                 />
               </div>
 
-              {/* Captcha Security Challenge */}
-              <div className={s.captchaGroup}>
-                <div className={s.captchaHeader}>
-                  <label className={s.captchaLabel}>
-                    <Icon name="verified_user" size={15} style={{ color: '#24451F' }} />
-                    <span>Security Verification Code</span>
-                  </label>
-                  <span className={s.captchaTag}>Bot Protection</span>
-                </div>
-
-                <div className={s.captchaRow}>
-                  <div
-                    className={s.captchaBox}
-                    title="Click refresh if characters are unclear"
-                    dangerouslySetInnerHTML={{ __html: captchaSvg }}
-                  />
-
-                  <div className={s.captchaActions}>
-                    <button
-                      type="button"
-                      className={s.captchaActionBtn}
-                      onClick={loadCaptcha}
-                      disabled={captchaLoading}
-                      title="Generate new captcha code"
-                      aria-label="Reload captcha"
-                    >
-                      <Icon name="refresh" size={18} className={captchaLoading ? s.captchaSpin : ''} />
-                    </button>
-
-                    <button
-                      type="button"
-                      className={s.captchaActionBtn}
-                      onClick={handleSpeakCaptcha}
-                      title="Audio readout of captcha code"
-                      aria-label="Audio readout of captcha code"
-                    >
-                      <Icon name="volume_up" size={18} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className={s.captchaInputWrapper}>
-                  <Input
-                    placeholder="Enter 6-character captcha"
-                    value={captchaInput}
-                    onChange={(e) => setCaptchaInput(e.target.value.toUpperCase())}
-                    maxLength={6}
-                    required
-                    leftIcon={<Icon name="shield" size={18} />}
-                  />
-                </div>
-              </div>
+              {/* Arithmetic Captcha Security Challenge */}
+              <ArithmeticCaptcha onVerify={handleCaptchaVerify} required />
 
               <div className={s.formUtils}>
                 <label className={s.rememberLabel}>
@@ -401,9 +300,29 @@ export const Login: React.FC = () => {
 
             <div className={s.footerText}>
               Don't have an account?{' '}
-              <Link to="/signup" className={s.signupLink}>
+              <Link to="/signup/citizen" className={s.signupLink}>
                 Create an account
               </Link>
+            </div>
+
+            {/* Separate Dedicated Portals */}
+            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Dedicated Role Portals:
+              </span>
+              <div style={{ display: 'flex', gap: '14px', fontSize: '12px' }}>
+                <Link to="/login/citizen" style={{ color: '#16a34a', fontWeight: 600, textDecoration: 'none' }}>
+                  🌱 Citizen
+                </Link>
+                <span style={{ color: '#cbd5e1' }}>•</span>
+                <Link to="/login/authority" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}>
+                  🏛️ Authority
+                </Link>
+                <span style={{ color: '#cbd5e1' }}>•</span>
+                <Link to="/login/superadmin" style={{ color: '#7c3aed', fontWeight: 600, textDecoration: 'none' }}>
+                  🛡️ Super Admin
+                </Link>
+              </div>
             </div>
           </div>
         </div>

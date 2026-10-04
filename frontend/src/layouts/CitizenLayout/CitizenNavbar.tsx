@@ -70,7 +70,7 @@ export const CitizenNavbar: React.FC = () => {
             <button
               onClick={async () => {
                 await logout();
-                navigate('/login');
+                navigate('/login/citizen');
               }}
               title="Sign Out"
               className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors border border-red-500/20"
@@ -81,7 +81,7 @@ export const CitizenNavbar: React.FC = () => {
         ) : (
           <div className="flex items-center gap-2">
             <Link
-              to="/login"
+              to="/login/citizen"
               className="px-3 py-1.5 text-xs font-semibold text-gray-300 hover:text-white transition-colors"
             >
               Sign In

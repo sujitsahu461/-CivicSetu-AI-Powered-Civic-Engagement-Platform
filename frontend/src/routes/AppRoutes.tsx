@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 
 // Layouts
 import CitizenLayout from '../layouts/CitizenLayout/CitizenLayout';
@@ -13,6 +13,12 @@ import ProtectedRoute from './ProtectedRoute';
 import Landing from '../pages/Landing';
 import Login from '../pages/Login';
 import Signup from '../pages/Signup';
+import CitizenLogin from '../pages/CitizenLogin';
+import AuthorityLogin from '../pages/AuthorityLogin';
+import SuperAdminLogin from '../pages/SuperAdminLogin';
+import CitizenSignup from '../pages/CitizenSignup';
+import AuthoritySignup from '../pages/AuthoritySignup';
+import SuperAdminSignup from '../pages/SuperAdminSignup';
 import ResetPassword from '../pages/ResetPassword';
 import MapView from '../pages/MapView';
 
@@ -39,14 +45,51 @@ import UserManagement from '../pages/superadmin/UserManagement';
 import SystemComplaintManagement from '../pages/superadmin/SystemComplaintManagement';
 import SystemAnalytics from '../pages/superadmin/SystemAnalytics';
 
+const LoginRedirect: React.FC = () => {
+  const [params] = useSearchParams();
+  const role = (params.get('role') || '').toLowerCase();
+  if (role === 'authority' || role === 'officer' || role === 'municipal') {
+    return <Navigate to="/login/authority" replace />;
+  }
+  if (role === 'superadmin' || role === 'admin') {
+    return <Navigate to="/login/superadmin" replace />;
+  }
+  return <Navigate to="/login/citizen" replace />;
+};
+
+const SignupRedirect: React.FC = () => {
+  const [params] = useSearchParams();
+  const role = (params.get('role') || '').toLowerCase();
+  if (role === 'authority' || role === 'officer' || role === 'municipal') {
+    return <Navigate to="/signup/authority" replace />;
+  }
+  if (role === 'superadmin' || role === 'admin') {
+    return <Navigate to="/signup/superadmin" replace />;
+  }
+  return <Navigate to="/signup/citizen" replace />;
+};
+
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Public Pages */}
       <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<LoginRedirect />} />
+      <Route path="/login/citizen" element={<CitizenLogin />} />
+      <Route path="/login/authority" element={<AuthorityLogin />} />
+      <Route path="/login/superadmin" element={<SuperAdminLogin />} />
+      <Route path="/login/admin" element={<SuperAdminLogin />} />
+      <Route path="/login/unified" element={<Login />} />
+
+      <Route path="/signup" element={<SignupRedirect />} />
+      <Route path="/signup/citizen" element={<CitizenSignup />} />
+      <Route path="/signup/authority" element={<AuthoritySignup />} />
+      <Route path="/signup/superadmin" element={<SuperAdminSignup />} />
+      <Route path="/signup/admin" element={<SuperAdminSignup />} />
+      <Route path="/signup/unified" element={<Signup />} />
+
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/forgot-password" element={<ResetPassword />} />
 
       {/* Public Grievance Submission & Tracking (Anonymous & Registered Citizens) */}
       <Route element={<CitizenLayout />}>

@@ -81,14 +81,14 @@ export const Signup: React.FC = () => {
 
     try {
       await register({
-        email,
+        email: email.trim().toLowerCase(),
         password,
-        full_name: fullName,
-        phone,
+        full_name: fullName.trim(),
+        phone: phone.trim() || undefined,
         role,
         department: role === 'AUTHORITY' ? department : undefined,
-        designation: role === 'AUTHORITY' ? designation : undefined,
-        address,
+        designation: role === 'AUTHORITY' ? (designation.trim() || undefined) : undefined,
+        address: address.trim() || undefined,
       });
 
       success(`Account created successfully! Welcome to CivicSetu, ${fullName}.`);
@@ -389,9 +389,29 @@ export const Signup: React.FC = () => {
 
             <div className={s.footerText}>
               Already have an account?{' '}
-              <Link to="/login" className={s.signupLink}>
+              <Link to="/login/citizen" className={s.signupLink}>
                 Sign in
               </Link>
+            </div>
+
+            {/* Separate Dedicated Portals */}
+            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Dedicated Registration Portals:
+              </span>
+              <div style={{ display: 'flex', gap: '14px', fontSize: '12px' }}>
+                <Link to="/signup/citizen" style={{ color: '#16a34a', fontWeight: 600, textDecoration: 'none' }}>
+                  🌱 Citizen
+                </Link>
+                <span style={{ color: '#cbd5e1' }}>•</span>
+                <Link to="/signup/authority" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}>
+                  🏛️ Authority
+                </Link>
+                <span style={{ color: '#cbd5e1' }}>•</span>
+                <Link to="/signup/superadmin" style={{ color: '#7c3aed', fontWeight: 600, textDecoration: 'none' }}>
+                  🛡️ Super Admin
+                </Link>
+              </div>
             </div>
           </div>
         </div>

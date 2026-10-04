@@ -29,18 +29,18 @@ class UserRegistrationService:
         designation="",
         **kwargs,
     ):
-        if role == UserRole.SUPER_ADMIN:
-            raise ValueError("Super admin accounts cannot be created through public registration.")
-
+        is_admin = role == UserRole.SUPER_ADMIN
         user = User.objects.create_user(
             email=email,
             password=password,
             full_name=full_name,
-            phone=phone or None,
+            phone=(phone or "").strip() or None,
             role=role,
             address=address or "",
             department=department or "",
             designation=designation or "",
+            is_staff=is_admin,
+            is_superuser=is_admin,
         )
 
         return user

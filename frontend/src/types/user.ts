@@ -60,6 +60,7 @@ export interface RegisterPayload {
   department?: string;
   designation?: string;
   address?: string;
+  security_key?: string;
 }
 
 export interface ForgotPasswordPayload {

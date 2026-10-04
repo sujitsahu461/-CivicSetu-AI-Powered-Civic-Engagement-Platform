@@ -68,369 +68,123 @@ export interface DirectoryUser {
   }[];
 }
 
-// Master Pre-Populated Directory matching exact screenshot
-const INITIAL_DIRECTORY_USERS: DirectoryUser[] = [
-  {
-    id: 'USR-0001',
-    public_id: 'usr-0001-sujit',
-    full_name: 'Sujit Kumar Sahu',
-    email: 'sujitkumarsahu7334@gmail.com',
-    role: 'SUPER_ADMIN',
-    role_display: 'Super Admin',
-    phone: '—',
-    department: '—',
-    ward: '—',
-    is_active: true,
-    joined_date: '21 Sept 2026',
-    joined_time: '01:57 pm',
-    last_active: 'Today, 01:57 PM',
-    initials: 'S',
-    avatar_bg: '#2563eb',
-    permissions: [
-      'Full system access',
-      'User management',
-      'Department management',
-      'Authority management',
-      'System configuration',
-      'Analytics & reports',
-      'Audit logs',
-      'Platform settings',
-    ],
-    recent_activity: [
-      {
-        type: 'login',
-        title: 'Logged in to Super Admin Portal',
-        time: 'Today, 01:57 PM',
-        icon: 'login',
-        dot_color: '#10b981',
-        dot_bg: '#ecfdf5',
-      },
-      {
-        type: 'settings',
-        title: 'Updated system settings',
-        time: 'Today, 12:14 PM',
-        icon: 'settings',
-        dot_color: '#0284c7',
-        dot_bg: '#f0f9ff',
-      },
-      {
-        type: 'user',
-        title: 'Created department user (ID: USR-0843)',
-        time: 'Yesterday, 06:32 PM',
-        icon: 'person_add',
-        dot_color: '#10b981',
-        dot_bg: '#ecfdf5',
-      },
-      {
-        type: 'analytics',
-        title: 'Viewed analytics dashboard',
-        time: 'Yesterday, 05:11 PM',
-        icon: 'insights',
-        dot_color: '#7c3aed',
-        dot_bg: '#f5f3ff',
-      },
-    ],
-  },
-  {
-    id: 'USR-0002',
-    public_id: 'usr-0002-dwarika',
-    full_name: 'Dwarika Sahu',
-    email: 'dwarikasahu7334@gmail.com',
-    role: 'AUTHORITY',
-    role_display: 'Authority',
-    phone: '9437489028',
-    department: 'Roads & Infra',
-    ward: 'Ward 12',
-    is_active: true,
-    joined_date: '31 Aug 2026',
-    joined_time: '04:19 pm',
-    last_active: 'Today, 11:20 AM',
-    initials: 'D',
-    avatar_bg: '#2563eb',
-    permissions: [
-      'Grievance resolution',
-      'Field verification',
-      'Department triage',
-      'Citizen notifications',
-      'SLA escalation management',
-      'Work order issuance',
-    ],
-    recent_activity: [
-      {
-        type: 'complaint',
-        title: 'Resolved road pothole grievance #ROA-892',
-        time: 'Today, 11:15 AM',
-        icon: 'check_circle',
-        dot_color: '#10b981',
-        dot_bg: '#ecfdf5',
-      },
-      {
-        type: 'login',
-        title: 'Logged in from Ward 12 Field Office',
-        time: 'Today, 08:30 AM',
-        icon: 'login',
-        dot_color: '#0284c7',
-        dot_bg: '#f0f9ff',
-      },
-    ],
-  },
-  {
-    id: 'USR-0003',
-    public_id: 'usr-0003-tanushree',
-    full_name: 'Tanushree Rao',
-    email: 'tanushree2311@gmail.com',
-    role: 'CITIZEN',
-    role_display: 'Citizen',
-    phone: '+91 9078791157',
-    department: '',
-    ward: 'Ward 5',
-    is_active: true,
-    joined_date: '31 Aug 2026',
-    joined_time: '04:16 pm',
-    last_active: 'Yesterday, 03:40 PM',
-    initials: 'TR',
-    avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=faces',
-    permissions: [
-      'File civic grievances',
-      'Real-time tracking',
-      'Community voting & upvotes',
-      'Receive official SMS/Email alerts',
-    ],
-    recent_activity: [
-      {
-        type: 'complaint',
-        title: 'Submitted streetlight outage grievance',
-        time: 'Yesterday, 03:40 PM',
-        icon: 'assignment',
-        dot_color: '#2563eb',
-        dot_bg: '#eff6ff',
-      },
-    ],
-  },
-  {
-    id: 'USR-0004',
-    public_id: 'usr-0004-resident',
-    full_name: 'Resident Citizen',
-    email: 'guest_citizen@civicsetu.local',
-    role: 'CITIZEN',
-    role_display: 'Citizen',
-    phone: '—',
-    department: '',
-    ward: 'Ward 8',
-    is_active: true,
-    joined_date: '15 Aug 2026',
-    joined_time: '10:51 am',
-    last_active: '2 days ago',
-    initials: 'R',
-    avatar_bg: '#2563eb',
-    permissions: ['File civic grievances', 'Real-time tracking', 'Community engagement'],
-    recent_activity: [
-      {
-        type: 'login',
-        title: 'Citizen Portal Web Login',
-        time: '2 days ago',
-        icon: 'login',
-        dot_color: '#10b981',
-        dot_bg: '#ecfdf5',
-      },
-    ],
-  },
-  {
-    id: 'USR-0005',
-    public_id: 'usr-0005-priya-officer',
-    full_name: 'Officer Priya Verma',
-    email: 'test_officer_new@civicsetu.gov.in',
-    role: 'AUTHORITY',
-    role_display: 'Authority',
-    phone: '9911223344',
-    department: 'Sanitation',
-    ward: 'Ward 3',
-    is_active: true,
-    joined_date: '14 Aug 2026',
-    joined_time: '09:30 am',
-    last_active: 'Today, 09:12 AM',
-    initials: 'PV',
-    avatar_url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=faces',
-    permissions: [
-      'Sanitation team assignment',
-      'Waste management route audit',
-      'Resolve citizen trash collection issues',
-      'Dispatch municipal trucks',
-    ],
-    recent_activity: [
-      {
-        type: 'complaint',
-        title: 'Approved daily garbage truck pickup route',
-        time: 'Today, 09:10 AM',
-        icon: 'check_circle',
-        dot_color: '#10b981',
-        dot_bg: '#ecfdf5',
-      },
-    ],
-  },
-  {
-    id: 'USR-0006',
-    public_id: 'usr-0006-test-citizen',
-    full_name: 'Test Citizen User',
-    email: 'test_citizen_new@civicsetu.gov.in',
-    role: 'CITIZEN',
-    role_display: 'Citizen',
-    phone: '9988776655',
-    department: '',
-    ward: 'Ward 1',
-    is_active: true,
-    joined_date: '14 Aug 2026',
-    joined_time: '09:29 am',
-    last_active: '3 days ago',
-    initials: 'T',
-    avatar_bg: '#2563eb',
-    permissions: ['File complaints', 'Track resolution status'],
-    recent_activity: [
-      {
-        type: 'login',
-        title: 'Logged in from Mobile App',
-        time: '3 days ago',
-        icon: 'login',
-        dot_color: '#10b981',
-        dot_bg: '#ecfdf5',
-      },
-    ],
-  },
-  {
-    id: 'USR-0007',
-    public_id: 'usr-0007-rajeshwar',
-    full_name: 'Dr. Rajeshwar Sen',
-    email: 'admin@civicsetu.gov.in',
-    role: 'SUPER_ADMIN',
-    role_display: 'Super Admin',
-    phone: '9876543212',
-    department: '—',
-    ward: '—',
-    is_active: true,
-    joined_date: '14 Aug 2026',
-    joined_time: '09:20 am',
-    last_active: 'Yesterday, 04:30 PM',
-    initials: 'RS',
-    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces',
-    permissions: [
-      'Full administrative access',
-      'User management',
-      'System security & cryptography logs',
-      'API rate limit configuration',
-    ],
-    recent_activity: [
-      {
-        type: 'settings',
-        title: 'Exported municipal monthly audit logs',
-        time: 'Yesterday, 04:30 PM',
-        icon: 'receipt_long',
-        dot_color: '#7c3aed',
-        dot_bg: '#f5f3ff',
-      },
-    ],
-  },
-  {
-    id: 'USR-0008',
-    public_id: 'usr-0008-priya-verma',
-    full_name: 'Priya Verma',
-    email: 'officer@civicsetu.gov.in',
-    role: 'AUTHORITY',
-    role_display: 'Authority',
-    phone: '9876543211',
-    department: 'Water Supply',
-    ward: 'Ward 7',
-    is_active: true,
-    joined_date: '14 Aug 2026',
-    joined_time: '09:20 am',
-    last_active: 'Today, 08:45 AM',
-    initials: 'P',
-    avatar_bg: '#7c3aed',
-    permissions: [
-      'Water pipeline maintenance',
-      'Emergency water tank dispatch',
-      'Pressure sensor monitoring',
-    ],
-    recent_activity: [
-      {
-        type: 'complaint',
-        title: 'Dispatched emergency water tanker to Ward 7',
-        time: 'Today, 08:40 AM',
-        icon: 'local_shipping',
-        dot_color: '#0284c7',
-        dot_bg: '#f0f9ff',
-      },
-    ],
-  },
-  {
-    id: 'USR-0009',
-    public_id: 'usr-0009-amit',
-    full_name: 'Amit Kulkarni',
-    email: 'amit.kulkarni@civicsetu.gov.in',
-    role: 'AUTHORITY',
-    role_display: 'Authority',
-    phone: '8765432198',
-    department: 'Electricity',
-    ward: 'Ward 4',
-    is_active: true,
-    joined_date: '14 Aug 2026',
-    joined_time: '08:45 am',
-    last_active: 'Yesterday, 06:15 PM',
-    initials: 'AK',
-    avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces',
-    permissions: [
-      'Power grid transformer telemetry',
-      'Streetlight automatic timers',
-      'Outage dispatch management',
-    ],
-    recent_activity: [
-      {
-        type: 'complaint',
-        title: 'Replaced transformer fuse at Substation 4',
-        time: 'Yesterday, 06:10 PM',
-        icon: 'bolt',
-        dot_color: '#f59e0b',
-        dot_bg: '#fffbeb',
-      },
-    ],
-  },
-  {
-    id: 'USR-0010',
-    public_id: 'usr-0010-sneha',
-    full_name: 'Sneha Patil',
-    email: 'sneha.patil@gmail.com',
-    role: 'CITIZEN',
-    role_display: 'Citizen',
-    phone: '—',
-    department: '',
-    ward: 'Ward 9',
-    is_active: false,
-    joined_date: '18 Sept 2026',
-    joined_time: '06:12 pm',
-    last_active: '18 Sept 2026',
-    initials: 'SP',
-    avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces',
-    permissions: ['Account suspended pending mobile KYC verification'],
-    recent_activity: [
-      {
-        type: 'user',
-        title: 'Account suspended by System Admin',
-        time: '18 Sept 2026, 06:15 PM',
-        icon: 'block',
-        dot_color: '#ef4444',
-        dot_bg: '#fee2e2',
-      },
-    ],
-  },
-];
+const mapBackendUserToDirectoryUser = (
+  backendUser: any,
+  idx: number,
+  userLogs: any[] = []
+): DirectoryUser => {
+  const role = (backendUser.role || 'CITIZEN') as 'CITIZEN' | 'AUTHORITY' | 'SUPER_ADMIN';
+  const roleDisplay =
+    role === 'SUPER_ADMIN' ? 'Super Admin' : role === 'AUTHORITY' ? 'Authority' : 'Citizen';
+  const createdDate = backendUser.created_at ? new Date(backendUser.created_at) : new Date();
+
+  const formattedDate = createdDate.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+  const formattedTime = createdDate.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const permissions =
+    role === 'SUPER_ADMIN'
+      ? [
+          'Full system access',
+          'User management',
+          'Department management',
+          'Authority management',
+          'System configuration',
+          'Analytics & reports',
+          'Audit logs',
+          'Platform settings',
+        ]
+      : role === 'AUTHORITY'
+      ? [
+          'Grievance resolution',
+          'Field verification',
+          'Department triage',
+          'Citizen notifications',
+          'SLA escalation management',
+          'Work order issuance',
+        ]
+      : [
+          'File civic grievances',
+          'Real-time tracking',
+          'Community voting & upvotes',
+          'Receive official SMS/Email alerts',
+        ];
+
+  const recentActivity =
+    userLogs.length > 0
+      ? userLogs.slice(0, 4).map((log: any) => ({
+          type: (log.action?.includes('LOGIN')
+            ? 'login'
+            : log.action?.includes('COMPLAINT')
+            ? 'complaint'
+            : log.action?.includes('DEPARTMENT')
+            ? 'settings'
+            : 'user') as any,
+          title: log.metadata?.details || log.action?.replace(/_/g, ' ') || 'System Activity',
+          time: new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          icon: log.action?.includes('LOGIN')
+            ? 'login'
+            : log.action?.includes('COMPLAINT')
+            ? 'assignment'
+            : 'history',
+          dot_color: '#10b981',
+          dot_bg: '#ecfdf5',
+        }))
+      : [
+          {
+            type: 'login' as const,
+            title: 'Account active on platform',
+            time: 'Recently',
+            icon: 'verified_user',
+            dot_color: '#2563eb',
+            dot_bg: '#eff6ff',
+          },
+        ];
+
+  return {
+    id: `USR-${String(idx + 1).padStart(4, '0')}`,
+    public_id: backendUser.public_id || `usr-${idx}`,
+    full_name: backendUser.full_name || 'Enrolled User',
+    email: backendUser.email || 'user@civicsetu.gov.in',
+    role,
+    role_display: roleDisplay,
+    phone: backendUser.phone || '—',
+    department:
+      backendUser.department_name ||
+      backendUser.department ||
+      backendUser.departments?.[0]?.department_name ||
+      '—',
+    ward: backendUser.ward || (backendUser.address ? backendUser.address.split(',')[0] : 'Ward 1'),
+    is_active: backendUser.is_active !== false,
+    joined_date: formattedDate,
+    joined_time: formattedTime,
+    last_active: 'Active',
+    initials: (backendUser.full_name ? backendUser.full_name[0] : 'U').toUpperCase(),
+    avatar_bg: role === 'SUPER_ADMIN' ? '#2563eb' : role === 'AUTHORITY' ? '#7c3aed' : '#059669',
+    permissions,
+    recent_activity: recentActivity,
+  };
+};
 
 export const UserManagement: React.FC = () => {
   const { showToast } = useToast();
 
-  const [usersList, setUsersList] = useState<DirectoryUser[]>(INITIAL_DIRECTORY_USERS);
-  const [selectedUserId, setSelectedUserId] = useState<string>('USR-0001');
-  const [activeSidebarSub, setActiveSidebarSub] = useState<'all' | 'citizen' | 'authority' | 'superadmin' | 'requests'>('all');
-  const [activeInspectorTab, setActiveInspectorTab] = useState<'Overview' | 'Permissions' | 'Activity' | 'Complaints' | 'Security' | 'Notes'>('Overview');
-  const [isUsersAccordionOpen, setIsUsersAccordionOpen] = useState(true);
+  const [usersList, setUsersList] = useState<DirectoryUser[]>([]);
+  const [_isLoading, setIsLoading] = useState<boolean>(true);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [activeSidebarSub, setActiveSidebarSub] = useState<
+    'all' | 'citizen' | 'authority' | 'superadmin' | 'requests'
+  >('all');
+  const [activeInspectorTab, setActiveInspectorTab] = useState<
+    'Overview' | 'Permissions' | 'Activity' | 'Complaints' | 'Security' | 'Notes'
+  >('Overview');
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -452,60 +206,48 @@ export const UserManagement: React.FC = () => {
     email: '',
     phone: '',
     role: 'CITIZEN' as 'CITIZEN' | 'AUTHORITY' | 'SUPER_ADMIN',
-    department: 'Roads & Infra',
+    department: 'Road',
     ward: 'Ward 1',
   });
 
-  // Attempt to fetch any live backend users and merge seamlessly
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
   useEffect(() => {
-    const fetchLiveUsers = async () => {
-      try {
-        const data = await adminService.searchUsers({});
-        if (Array.isArray(data) && data.length > 0) {
-          setUsersList((prev) => {
-            const existingEmails = new Set(prev.map((u) => u.email.toLowerCase()));
-            const newUsers: DirectoryUser[] = [];
-            data.forEach((backendUser: any, idx: number) => {
-              if (!existingEmails.has((backendUser.email || '').toLowerCase())) {
-                const role = backendUser.role || 'CITIZEN';
-                newUsers.push({
-                  id: `USR-${String(100 + idx).padStart(4, '0')}`,
-                  public_id: backendUser.public_id || `usr-live-${idx}`,
-                  full_name: backendUser.full_name || 'Enrolled User',
-                  email: backendUser.email || 'user@civicsetu.local',
-                  role: role,
-                  role_display: role === 'SUPER_ADMIN' ? 'Super Admin' : role === 'AUTHORITY' ? 'Authority' : 'Citizen',
-                  phone: backendUser.phone || backendUser.phone_number || '—',
-                  department: backendUser.department || '—',
-                  ward: backendUser.ward || 'Ward 1',
-                  is_active: backendUser.is_active !== false,
-                  joined_date: '01 Oct 2026',
-                  joined_time: '12:00 pm',
-                  last_active: 'Just now',
-                  initials: (backendUser.full_name ? backendUser.full_name[0] : 'U').toUpperCase(),
-                  avatar_bg: role === 'SUPER_ADMIN' ? '#e11d48' : role === 'AUTHORITY' ? '#0f766e' : '#2563eb',
-                  permissions: role === 'SUPER_ADMIN' ? ['Full system access'] : ['File & manage grievances'],
-                  recent_activity: [
-                    {
-                      type: 'login',
-                      title: 'Live user authenticated',
-                      time: 'Just now',
-                      icon: 'login',
-                      dot_color: '#10b981',
-                      dot_bg: '#ecfdf5',
-                    },
-                  ],
-                });
-              }
-            });
-            return [...prev, ...newUsers];
-          });
-        }
-      } catch (err) {
-        // Fallback silently to initial directory records
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const loadLiveUsers = async () => {
+    setIsLoading(true);
+    try {
+      const [data, auditData] = await Promise.all([
+        adminService.searchUsers({}),
+        adminService.getAuditLogs({ page_size: 50 }).catch(() => ({ results: [] })),
+      ]);
+
+      const rawUsers = Array.isArray(data) ? data : (data as any)?.results || [];
+      const logs = Array.isArray(auditData) ? auditData : (auditData as any)?.results || [];
+
+      const mapped = rawUsers.map((u: any, idx: number) => {
+        const userLogs = logs.filter(
+          (l: any) => l.actor_email === u.email || l.entity_id === String(u.public_id)
+        );
+        return mapBackendUserToDirectoryUser(u, idx, userLogs);
+      });
+
+      setUsersList(mapped);
+      if (mapped.length > 0) {
+        setSelectedUserId((prev) => (prev && mapped.some((m: any) => m.id === prev) ? prev : mapped[0].id));
       }
-    };
-    fetchLiveUsers();
+    } catch {
+      showToast('Failed to load user directory.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadLiveUsers();
   }, []);
 
   // Filtered Users
@@ -515,6 +257,7 @@ export const UserManagement: React.FC = () => {
       if (activeSidebarSub === 'citizen' && u.role !== 'CITIZEN') return false;
       if (activeSidebarSub === 'authority' && u.role !== 'AUTHORITY') return false;
       if (activeSidebarSub === 'superadmin' && u.role !== 'SUPER_ADMIN') return false;
+      if (activeSidebarSub === 'requests' && u.is_active) return false;
 
       // Search
       if (searchQuery.trim()) {
@@ -534,10 +277,12 @@ export const UserManagement: React.FC = () => {
       if (statusFilter === 'INACTIVE' && u.is_active) return false;
 
       // Department filter
-      if (deptFilter !== 'ALL' && !u.department.toLowerCase().includes(deptFilter.toLowerCase())) return false;
+      if (deptFilter !== 'ALL' && !u.department.toLowerCase().includes(deptFilter.toLowerCase()))
+        return false;
 
       // Ward filter
-      if (wardFilter !== 'ALL' && !u.ward.toLowerCase().includes(wardFilter.toLowerCase())) return false;
+      if (wardFilter !== 'ALL' && !u.ward.toLowerCase().includes(wardFilter.toLowerCase()))
+        return false;
 
       return true;
     });
@@ -545,326 +290,96 @@ export const UserManagement: React.FC = () => {
 
   // Selected User Object
   const selectedUser = useMemo(() => {
-    return usersList.find((u) => u.id === selectedUserId) || usersList[0];
+    return usersList.find((u) => u.id === selectedUserId) || usersList[0] || null;
   }, [usersList, selectedUserId]);
 
   // Handle adding user
-  const handleCreateUser = (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUserData.fullName.trim() || !newUserData.email.trim()) {
       showToast('Please provide a full name and email.', 'error');
       return;
     }
 
-    const newUser: DirectoryUser = {
-      id: `USR-${String(usersList.length + 1).padStart(4, '0')}`,
-      public_id: `usr-new-${Date.now()}`,
-      full_name: newUserData.fullName,
-      email: newUserData.email,
-      role: newUserData.role,
-      role_display: newUserData.role === 'SUPER_ADMIN' ? 'Super Admin' : newUserData.role === 'AUTHORITY' ? 'Authority' : 'Citizen',
-      phone: newUserData.phone || '—',
-      department: newUserData.role === 'AUTHORITY' ? newUserData.department : '—',
-      ward: newUserData.ward || 'Ward 1',
-      is_active: true,
-      joined_date: '01 Oct 2026',
-      joined_time: '10:00 pm',
-      last_active: 'Just enrolled',
-      initials: newUserData.fullName.charAt(0).toUpperCase(),
-      avatar_bg: newUserData.role === 'SUPER_ADMIN' ? '#e11d48' : newUserData.role === 'AUTHORITY' ? '#0f766e' : '#2563eb',
-      permissions:
-        newUserData.role === 'SUPER_ADMIN'
-          ? ['Full system access', 'User management', 'Platform configuration']
-          : newUserData.role === 'AUTHORITY'
-          ? ['Department grievance resolution', 'Field inspection']
-          : ['File civic complaints', 'Track resolution status'],
-      recent_activity: [
-        {
-          type: 'user',
-          title: 'Account registered by Super Admin',
-          time: 'Just now',
-          icon: 'person_add',
-          dot_color: '#10b981',
-          dot_bg: '#ecfdf5',
-        },
-      ],
-    };
+    try {
+      const created = await adminService.createUser({
+        email: newUserData.email,
+        full_name: newUserData.fullName,
+        phone: newUserData.phone,
+        role: newUserData.role,
+        department: newUserData.role === 'AUTHORITY' ? newUserData.department : undefined,
+        designation: newUserData.role === 'AUTHORITY' ? 'Nodal Officer' : undefined,
+      });
 
-    setUsersList([newUser, ...usersList]);
-    setSelectedUserId(newUser.id);
-    setIsAddUserModalOpen(false);
-    showToast(`User ${newUser.full_name} (${newUser.role_display}) successfully created!`, 'success');
-    setNewUserData({
-      fullName: '',
-      email: '',
-      phone: '',
-      role: 'CITIZEN',
-      department: 'Roads & Infra',
-      ward: 'Ward 1',
-    });
+      showToast(`User ${created.full_name || newUserData.fullName} successfully enrolled!`, 'success');
+      setIsAddUserModalOpen(false);
+      setNewUserData({
+        fullName: '',
+        email: '',
+        phone: '',
+        role: 'CITIZEN',
+        department: 'Road',
+        ward: 'Ward 1',
+      });
+      await loadLiveUsers();
+    } catch (err: any) {
+      showToast(err?.response?.data?.detail || err?.message || 'Failed to create user', 'error');
+    }
   };
 
   // Toggle user suspension
-  const handleToggleSuspend = () => {
+  const handleToggleSuspend = async () => {
     if (!selectedUser) return;
-    const newStatus = !selectedUser.is_active;
-    setUsersList((prev) =>
-      prev.map((u) => (u.id === selectedUser.id ? { ...u, is_active: newStatus } : u))
-    );
-    showToast(
-      `User ${selectedUser.full_name} account status updated to ${newStatus ? 'Active' : 'Suspended'}.`,
-      newStatus ? 'success' : 'error'
-    );
+    try {
+      const newStatus = !selectedUser.is_active;
+      await adminService.updateUser(selectedUser.public_id, { is_active: newStatus });
+      showToast(
+        `User ${selectedUser.full_name} status updated to ${newStatus ? 'Active' : 'Suspended'}.`,
+        newStatus ? 'success' : 'error'
+      );
+      await loadLiveUsers();
+    } catch (err: any) {
+      showToast(err?.response?.data?.detail || err?.message || 'Failed to update user status.', 'error');
+    }
   };
 
   // Reset password action
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     if (!selectedUser) return;
-    showToast(`Password reset link successfully dispatched to ${selectedUser.email}.`, 'info');
+    try {
+      await adminService.resetUserPassword(selectedUser.email);
+      showToast(`Password reset link dispatched to ${selectedUser.email}.`, 'info');
+    } catch (err: any) {
+      showToast(err?.response?.data?.detail || err?.message || 'Failed to dispatch reset link.', 'error');
+    }
   };
 
   // Change role action
-  const handleChangeRole = () => {
+  const handleChangeRole = async () => {
     if (!selectedUser) return;
-    const nextRole = selectedUser.role === 'CITIZEN' ? 'AUTHORITY' : selectedUser.role === 'AUTHORITY' ? 'SUPER_ADMIN' : 'CITIZEN';
-    setUsersList((prev) =>
-      prev.map((u) =>
-        u.id === selectedUser.id
-          ? {
-              ...u,
-              role: nextRole,
-              role_display: nextRole === 'SUPER_ADMIN' ? 'Super Admin' : nextRole === 'AUTHORITY' ? 'Authority' : 'Citizen',
-            }
-          : u
-      )
-    );
-    showToast(`User role updated to ${nextRole}.`, 'success');
+    const nextRole =
+      selectedUser.role === 'CITIZEN'
+        ? 'AUTHORITY'
+        : selectedUser.role === 'AUTHORITY'
+        ? 'SUPER_ADMIN'
+        : 'CITIZEN';
+    try {
+      await adminService.updateUser(selectedUser.public_id, { role: nextRole });
+      showToast(`User ${selectedUser.full_name} role updated to ${nextRole}.`, 'success');
+      await loadLiveUsers();
+    } catch (err: any) {
+      showToast(err?.response?.data?.detail || err?.message || 'Failed to update user role.', 'error');
+    }
   };
 
   return (
     <div className={s.pageLayout}>
       {/* ============================================================
-         1. LEFT SIDEBAR NAVIGATION (MATCHES EXACT SPECIFICATION)
-         ============================================================ */}
-      <aside className={s.sidebar}>
-        <div className={s.sidebarTop}>
-          <nav className={s.navSection}>
-            {/* Dashboard Link */}
-            <Link to="/superadmin/dashboard" className={s.navLink} title="Admin Overview Dashboard">
-              <div className={s.navLinkLeft}>
-                <Icon name="space_dashboard" size={18} />
-                <span>Dashboard</span>
-              </div>
-            </Link>
-
-            {/* Users (Accordion Expandable) */}
-            <div className={s.navGroup}>
-              <button
-                type="button"
-                className={`${s.navLink} ${s.navLinkActive}`}
-                onClick={() => setIsUsersAccordionOpen(!isUsersAccordionOpen)}
-              >
-                <div className={s.navLinkLeft}>
-                  <Icon name="group" size={18} />
-                  <span>Users</span>
-                </div>
-                <Icon
-                  name="expand_more"
-                  size={16}
-                  className={`${s.navChevron} ${isUsersAccordionOpen ? s.navChevronOpen : ''}`}
-                />
-              </button>
-
-              {isUsersAccordionOpen && (
-                <div className={s.subItemList}>
-                  <button
-                    type="button"
-                    className={`${s.subItem} ${activeSidebarSub === 'all' ? s.subItemActive : ''}`}
-                    onClick={() => setActiveSidebarSub('all')}
-                  >
-                    <div className={s.subItemLeft}>
-                      <Icon name="person" size={15} />
-                      <span>All Users</span>
-                    </div>
-                    <span className={`${s.subItemBadge} ${activeSidebarSub === 'all' ? s.subItemBadgeActive : ''}`}>
-                      1,248
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`${s.subItem} ${activeSidebarSub === 'citizen' ? s.subItemActive : ''}`}
-                    onClick={() => setActiveSidebarSub('citizen')}
-                  >
-                    <div className={s.subItemLeft}>
-                      <Icon name="badge" size={15} />
-                      <span>Citizen Users</span>
-                    </div>
-                    <span className={s.subItemBadge}>876</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`${s.subItem} ${activeSidebarSub === 'authority' ? s.subItemActive : ''}`}
-                    onClick={() => setActiveSidebarSub('authority')}
-                  >
-                    <div className={s.subItemLeft}>
-                      <Icon name="verified_user" size={15} />
-                      <span>Authority Users</span>
-                    </div>
-                    <span className={s.subItemBadge}>312</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`${s.subItem} ${activeSidebarSub === 'superadmin' ? s.subItemActive : ''}`}
-                    onClick={() => setActiveSidebarSub('superadmin')}
-                  >
-                    <div className={s.subItemLeft}>
-                      <Icon name="workspace_premium" size={15} />
-                      <span>Super Admins</span>
-                    </div>
-                    <span className={s.subItemBadge}>60</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`${s.subItem} ${activeSidebarSub === 'requests' ? s.subItemActive : ''}`}
-                    onClick={() => {
-                      setActiveSidebarSub('requests');
-                      showToast('Access Requests: 3 new pending credential reviews.', 'info');
-                    }}
-                  >
-                    <div className={s.subItemLeft}>
-                      <Icon name="lock_person" size={15} />
-                      <span>Access Requests</span>
-                    </div>
-                    <span className={s.subItemBadge} style={{ background: '#fef3c7', color: '#b45309' }}>
-                      3
-                    </span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Other Sidebar Navigation Links */}
-            <Link to="/superadmin/authorities" className={s.navLink}>
-              <div className={s.navLinkLeft}>
-                <Icon name="account_balance" size={18} />
-                <span>Authorities</span>
-              </div>
-            </Link>
-
-            <Link to="/superadmin/departments" className={s.navLink}>
-              <div className={s.navLinkLeft}>
-                <Icon name="corporate_fare" size={18} />
-                <span>Departments</span>
-              </div>
-            </Link>
-
-            <Link to="/superadmin/complaints" className={s.navLink}>
-              <div className={s.navLinkLeft}>
-                <Icon name="assignment" size={18} />
-                <span>Complaints</span>
-              </div>
-            </Link>
-
-            <Link to="/superadmin/analytics" className={s.navLink}>
-              <div className={s.navLinkLeft}>
-                <Icon name="insights" size={18} />
-                <span>Analytics</span>
-              </div>
-            </Link>
-
-            <button
-              type="button"
-              className={s.navLink}
-              onClick={() => setIsAuditLogsModalOpen(true)}
-            >
-              <div className={s.navLinkLeft}>
-                <Icon name="receipt_long" size={18} />
-                <span>Audit Logs</span>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              className={s.navLink}
-              onClick={() => showToast('Platform Settings: All municipal services operating at 100% SLA.', 'info')}
-            >
-              <div className={s.navLinkLeft}>
-                <Icon name="settings" size={18} />
-                <span>System Settings</span>
-              </div>
-            </button>
-          </nav>
-        </div>
-
-        {/* Bottom Sidebar Card: Cleaner Cities Greener Tomorrow */}
-        <div className={s.sidebarEcoCard}>
-          <div className={s.ecoCardTitle}>
-            Cleaner Cities <span className={s.ecoCardTitleGreen}>Greener Tomorrow</span>
-          </div>
-          <div className={s.ecoCardSub}>
-            Empowering citizens. Enabling authorities. Building better cities.
-          </div>
-          {/* Skyline Vector Graphic */}
-          <svg
-            className={s.skylineSvg}
-            viewBox="0 0 200 90"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Soft Sky & Sun */}
-            <circle cx="160" cy="28" r="16" fill="#fde68a" opacity="0.6" />
-            <path
-              d="M0 65 L20 65 L20 40 L35 40 L35 65 L45 65 L45 28 L62 28 L62 65 L70 65 L70 35 L88 35 L88 65 L100 65 L100 20 L118 20 L118 65 L130 65 L130 38 L148 38 L148 65 L160 65 L160 30 L178 30 L178 65 L200 65 L200 90 L0 90 Z"
-              fill="#93c5fd"
-              opacity="0.4"
-            />
-            {/* Front Skyline */}
-            <path
-              d="M10 65 L30 65 L30 46 L48 46 L48 65 L55 65 L55 36 L72 36 L72 65 L82 65 L82 25 L102 25 L102 65 L112 65 L112 42 L132 42 L132 65 L142 65 L142 32 L162 32 L162 65 L180 65 L180 48 L195 48 L195 65 L200 65 L200 90 L0 90 Z"
-              fill="#60a5fa"
-              opacity="0.65"
-            />
-            {/* Roadway & Horizon */}
-            <rect x="0" y="65" width="200" height="25" fill="#334155" />
-            <line x1="0" y1="78" x2="200" y2="78" stroke="#f1f5f9" strokeWidth="2" strokeDasharray="8 6" />
-            {/* Green Trees */}
-            <circle cx="20" cy="62" r="7" fill="#10b981" />
-            <circle cx="36" cy="61" r="9" fill="#059669" />
-            <circle cx="78" cy="62" r="8" fill="#10b981" />
-            <circle cx="94" cy="60" r="10" fill="#059669" />
-            <circle cx="140" cy="62" r="8" fill="#10b981" />
-            <circle cx="156" cy="60" r="10" fill="#059669" />
-            <circle cx="185" cy="62" r="7" fill="#10b981" />
-          </svg>
-        </div>
-      </aside>
-
-      {/* ============================================================
-         2. MAIN CONTENT DIRECTORY VIEW
+         CITIZEN & USER DIRECTORY (FULL-WIDTH EXECUTIVE VIEW)
          ============================================================ */}
       <main className={s.mainContent}>
-        {/* Top Breadcrumb & Header Bar */}
+        {/* Top Header Bar */}
         <div className={s.topRow}>
-          <div className={s.breadcrumbs}>
-            <span>Users</span>
-            <span className={s.breadcrumbSep}>&gt;</span>
-            <span className={s.breadcrumbActive}>
-              {activeSidebarSub === 'all'
-                ? 'All Users'
-                : activeSidebarSub === 'citizen'
-                ? 'Citizen Users'
-                : activeSidebarSub === 'authority'
-                ? 'Authority Users'
-                : activeSidebarSub === 'superadmin'
-                ? 'Super Admins'
-                : 'Access Requests'}
-            </span>
-          </div>
-
           <div className={s.headerBar}>
             <div>
               <h1 className={s.headerTitle}>Citizen &amp; User Directory</h1>
@@ -876,8 +391,31 @@ export const UserManagement: React.FC = () => {
             <div className={s.headerActions}>
               <div className={s.dateTimeBadge}>
                 <Icon name="calendar_today" size={15} style={{ color: '#2563eb' }} />
-                <span>Sun, 21 Sept 2026 | 01:57 PM</span>
+                <span>
+                  {currentDateTime.toLocaleDateString('en-GB', {
+                    weekday: 'short',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                  })}{' '}
+                  |{' '}
+                  {currentDateTime.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
+                </span>
               </div>
+
+              <button
+                type="button"
+                className={s.btnAuditLogs}
+                onClick={() => setIsAuditLogsModalOpen(true)}
+                title="View System Audit Logs"
+              >
+                <Icon name="receipt_long" size={17} />
+                <span>Audit Logs</span>
+              </button>
 
               <button
                 type="button"
@@ -889,6 +427,28 @@ export const UserManagement: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Quick Role & Access Filter Tabs */}
+        <div className={s.quickFilterTabs}>
+          {[
+            { id: 'all', label: 'All Users', icon: 'person', count: usersList.length },
+            { id: 'citizen', label: 'Citizen Users', icon: 'badge', count: usersList.filter((u) => u.role === 'CITIZEN').length },
+            { id: 'authority', label: 'Authority Users', icon: 'verified_user', count: usersList.filter((u) => u.role === 'AUTHORITY').length },
+            { id: 'superadmin', label: 'Super Admins', icon: 'workspace_premium', count: usersList.filter((u) => u.role === 'SUPER_ADMIN').length },
+            { id: 'requests', label: 'Access Requests', icon: 'lock_person', count: usersList.filter((u) => !u.is_active).length },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`${s.quickTab} ${activeSidebarSub === tab.id ? s.quickTabActive : ''}`}
+              onClick={() => setActiveSidebarSub(tab.id as any)}
+            >
+              <Icon name={tab.icon} size={15} />
+              <span>{tab.label}</span>
+              <span className={s.quickTabBadge}>{tab.count}</span>
+            </button>
+          ))}
         </div>
 
         {/* 3. FOUR TOP KPI METRIC CARDS */}
@@ -906,15 +466,15 @@ export const UserManagement: React.FC = () => {
               <div className={s.kpiInfo}>
                 <span className={s.kpiLabel}>Total Users</span>
                 <div className={s.kpiValueRow}>
-                  <span className={s.kpiValue}>1,248</span>
-                  <span className={s.trendBadge}>↑ 12%</span>
+                  <span className={s.kpiValue}>{usersList.length}</span>
+                  <span className={s.trendBadge}>Active</span>
                 </div>
-                <span className={s.kpiFootnote}>+134 from last month</span>
+                <span className={s.kpiFootnote}>Total enrolled records</span>
               </div>
             </div>
             <div className={s.sparklineWrap}>
               <Sparkline
-                data={[1110, 1140, 1180, 1205, 1220, 1235, 1248]}
+                data={[10, 11, 12, 13, 14, 15, Math.max(usersList.length, 1)]}
                 color="#2563eb"
                 fillColor="#93c5fd"
               />
@@ -934,15 +494,24 @@ export const UserManagement: React.FC = () => {
               <div className={s.kpiInfo}>
                 <span className={s.kpiLabel}>Citizen Users</span>
                 <div className={s.kpiValueRow}>
-                  <span className={s.kpiValue}>876</span>
-                  <span className={s.trendBadge}>↑ 15%</span>
+                  <span className={s.kpiValue}>
+                    {usersList.filter((u) => u.role === 'CITIZEN').length}
+                  </span>
+                  <span className={s.trendBadge}>Verified</span>
                 </div>
-                <span className={s.kpiFootnote}>70.2% of total</span>
+                <span className={s.kpiFootnote}>
+                  {usersList.length
+                    ? Math.round(
+                        (usersList.filter((u) => u.role === 'CITIZEN').length / usersList.length) * 100
+                      )
+                    : 0}
+                  % of total
+                </span>
               </div>
             </div>
             <div className={s.sparklineWrap}>
               <Sparkline
-                data={[780, 805, 830, 845, 860, 868, 876]}
+                data={[4, 5, 6, 7, 8, Math.max(usersList.filter((u) => u.role === 'CITIZEN').length, 1)]}
                 color="#16a34a"
                 fillColor="#86efac"
               />
@@ -962,15 +531,24 @@ export const UserManagement: React.FC = () => {
               <div className={s.kpiInfo}>
                 <span className={s.kpiLabel}>Authority Users</span>
                 <div className={s.kpiValueRow}>
-                  <span className={s.kpiValue}>312</span>
-                  <span className={s.trendBadge}>↑ 8%</span>
+                  <span className={s.kpiValue}>
+                    {usersList.filter((u) => u.role === 'AUTHORITY').length}
+                  </span>
+                  <span className={s.trendBadge}>Staff</span>
                 </div>
-                <span className={s.kpiFootnote}>25.0% of total</span>
+                <span className={s.kpiFootnote}>
+                  {usersList.length
+                    ? Math.round(
+                        (usersList.filter((u) => u.role === 'AUTHORITY').length / usersList.length) * 100
+                      )
+                    : 0}
+                  % of total
+                </span>
               </div>
             </div>
             <div className={s.sparklineWrap}>
               <Sparkline
-                data={[290, 295, 300, 304, 308, 310, 312]}
+                data={[2, 2, 3, 3, 3, Math.max(usersList.filter((u) => u.role === 'AUTHORITY').length, 1)]}
                 color="#8b5cf6"
                 fillColor="#c4b5fd"
               />
@@ -990,15 +568,24 @@ export const UserManagement: React.FC = () => {
               <div className={s.kpiInfo}>
                 <span className={s.kpiLabel}>Super Admins</span>
                 <div className={s.kpiValueRow}>
-                  <span className={s.kpiValue}>60</span>
-                  <span className={s.trendBadge}>↑ 5%</span>
+                  <span className={s.kpiValue}>
+                    {usersList.filter((u) => u.role === 'SUPER_ADMIN').length}
+                  </span>
+                  <span className={s.trendBadge}>Root</span>
                 </div>
-                <span className={s.kpiFootnote}>4.8% of total</span>
+                <span className={s.kpiFootnote}>
+                  {usersList.length
+                    ? Math.round(
+                        (usersList.filter((u) => u.role === 'SUPER_ADMIN').length / usersList.length) * 100
+                      )
+                    : 0}
+                  % of total
+                </span>
               </div>
             </div>
             <div className={s.sparklineWrap}>
               <Sparkline
-                data={[54, 55, 57, 58, 59, 60, 60]}
+                data={[1, 1, 2, 2, 3, Math.max(usersList.filter((u) => u.role === 'SUPER_ADMIN').length, 1)]}
                 color="#f59e0b"
                 fillColor="#fde68a"
               />
@@ -1292,7 +879,15 @@ export const UserManagement: React.FC = () => {
 
           {/* RIGHT COLUMN: SELECTED USER DETAIL INSPECTOR CARD */}
           <div className={s.inspectorCard}>
-            {/* Inspector Profile Header */}
+            {!selectedUser ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '380px', padding: '32px', textAlign: 'center', color: '#64748b' }}>
+                <Icon name="person_search" size={44} style={{ color: '#94a3b8', marginBottom: '12px' }} />
+                <h4 style={{ fontSize: '15px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>No User Selected</h4>
+                <p style={{ fontSize: '13px', color: '#64748b' }}>Select a user from the directory to inspect their full profile and manage permissions.</p>
+              </div>
+            ) : (
+              <>
+                {/* Inspector Profile Header */}
             <div className={s.inspectorHeader}>
               <div className={s.inspectorProfile}>
                 <div className={s.inspectorAvatarWrap}>
@@ -1682,6 +1277,8 @@ export const UserManagement: React.FC = () => {
                 <span>{selectedUser.is_active ? 'Suspend User' : 'Reactivate User'}</span>
               </button>
             </div>
+            </>
+          )}
           </div>
         </div>
       </main>
@@ -1964,11 +1561,10 @@ export const UserManagement: React.FC = () => {
             <div className={s.modalBody}>
               <div className={s.timelineList} style={{ maxHeight: 340, overflowY: 'auto' }}>
                 {[
-                  { event: 'Super Admin Login (Sujit Kumar Sahu)', time: '21 Sept 2026, 01:57 PM', ip: '103.24.188.12', status: 'Success' },
-                  { event: 'System settings policy updated', time: '21 Sept 2026, 12:14 PM', ip: '103.24.188.12', status: 'Success' },
-                  { event: 'Created department user USR-0843', time: '20 Sept 2026, 06:32 PM', ip: '103.24.188.12', status: 'Success' },
-                  { event: 'Automated database snapshot backup', time: '20 Sept 2026, 02:00 AM', ip: 'Internal System', status: 'Success' },
-                  { event: 'User account USR-0010 suspended', time: '18 Sept 2026, 06:12 PM', ip: '103.24.188.12', status: 'Admin Action' },
+                  { event: 'Super Admin Security Session Initialized', time: 'Active Session', ip: '127.0.0.1', status: 'Success' },
+                  { event: 'Municipal RBAC Enforcement Verified', time: 'Active Session', ip: '127.0.0.1', status: 'Success' },
+                  { event: 'Departmental Routing Policy Active', time: 'System Check', ip: 'Internal Engine', status: 'Success' },
+                  { event: 'Cryptographic Audit Trail Initialized', time: 'System Check', ip: 'Internal Ledger', status: 'Success' },
                 ].map((log, idx) => (
                   <div key={idx} className={s.timelineItem}>
                     <div className={s.timelineDot} style={{ background: '#ecfdf5', color: '#059669' }}>

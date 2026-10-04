@@ -106,14 +106,34 @@
 }
 
 .brandLogoWrap {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: #112415;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 3px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.brandLogoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.mobileNavBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  margin-bottom: 8px;
 }
 
 .brandName {
@@ -841,6 +861,20 @@
   letter-spacing: -0.02em;
 }
 
+.sidebarBrandLogoWrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5px;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
 .sidebarNav {
   display: flex;
   flex-direction: column;
@@ -1488,6 +1522,20 @@
   gap: 16px;
 }
 
+.ctaTabletLogoWrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
 .ctaTabletIcon {
   font-size: 32px;
   color: #FFFFFF;
@@ -1583,6 +1631,26 @@
   gap: 20px;
 }
 
+.footerBrandLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footerLogoWrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
 .footerCopyright {
   font-size: 13px;
   color: #7B8F7F;
@@ -1620,20 +1688,33 @@
 }
 
 .giantLogoBridge {
-  width: 90px;
-  height: 90px;
+  width: 96px;
+  height: 96px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #D3ECD7;
+  border-radius: 24px;
+  background: #ffffff;
+  padding: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
   .giantLogoBridge {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    padding: 6px;
   }
+}
+
+.giantLogoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .giantWordmarkText {

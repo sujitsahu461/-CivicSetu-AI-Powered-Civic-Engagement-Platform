@@ -109,9 +109,79 @@ export const adminService = {
     return res.data;
   },
 
+  async createUser(payload: {
+    email: string;
+    full_name: string;
+    password?: string;
+    role?: string;
+    phone?: string;
+    department?: string;
+    designation?: string;
+  }): Promise<User> {
+    const res = await api.post('/users/create/', payload);
+    return res.data;
+  },
+
+  async updateUser(
+    publicId: string,
+    payload: {
+      is_active?: boolean;
+      role?: string;
+      full_name?: string;
+      phone?: string;
+      department?: string;
+      designation?: string;
+    }
+  ): Promise<User> {
+    const res = await api.patch(`/users/${publicId}/`, payload);
+    return res.data;
+  },
+
+  async deleteUser(publicId: string): Promise<any> {
+    const res = await api.delete(`/users/${publicId}/`);
+    return res.data;
+  },
+
+  async resetUserPassword(email: string): Promise<any> {
+    const res = await api.post('/auth/forgot-password/', { email });
+    return res.data;
+  },
+
   // System-wide Complaints
   async getSystemComplaints(params?: ComplaintFilterParams): Promise<any> {
     const res = await api.get('/complaints/', { params });
+    return res.data;
+  },
+
+  // Audit Logs
+  async getAuditLogs(params?: {
+    search?: string;
+    page?: number;
+    page_size?: number;
+    action?: string;
+    entity_type?: string;
+  }): Promise<any> {
+    const res = await api.get('/audit-logs/', { params });
+    return res.data;
+  },
+
+  async getAuditSummary(): Promise<any> {
+    const res = await api.get('/audit-logs/summary/');
+    return res.data;
+  },
+
+  // AI & ML
+  async classifyAi(title: string, description: string, locationAddress = ''): Promise<any> {
+    const res = await api.post('/ai/classify/', {
+      title,
+      description,
+      location_address: locationAddress,
+    });
+    return res.data;
+  },
+
+  async getCityInsights(): Promise<any> {
+    const res = await api.get('/ai/city-insights/');
     return res.data;
   },
 };

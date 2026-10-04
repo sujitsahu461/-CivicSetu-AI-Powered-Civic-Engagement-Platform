@@ -54,8 +54,8 @@ export const AuthorityManagement: React.FC = () => {
     e.preventDefault();
     setFormLoading(true);
     try {
-      // 1. Register officer user
-      await authService.register({
+      // 1. Provision officer user via Admin API
+      await adminService.createUser({
         email,
         password,
         full_name: fullName,
@@ -197,7 +197,7 @@ export const AuthorityManagement: React.FC = () => {
           <div className={s.formGrid}>
             <Input
               label="Full Name"
-              placeholder="e.g. Kaushik Pradhan"
+              placeholder="e.g. Executive Nodal Officer"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required

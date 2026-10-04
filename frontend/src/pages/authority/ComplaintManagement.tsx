@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import authorityService from '../../services/authority.service';
-import authService from '../../services/auth.service';
 import { useToast } from '../../components/ui/Toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -86,28 +85,10 @@ export const ComplaintManagement: React.FC = () => {
     } catch (err: any) {
       if (!silent) {
         if (err?.response?.status === 403) {
-          try {
-            await authService.switchRole('AUTHORITY');
-            const retryData = await authorityService.getComplaints({
-              q: searchTerm,
-              status: statusFilter || undefined,
-              priority: priorityFilter || undefined,
-            });
-            if (Array.isArray(retryData)) {
-              setComplaints(retryData);
-              setTotalCount(retryData.length);
-              return;
-            } else if (retryData?.results) {
-              setComplaints(retryData.results);
-              setTotalCount(retryData.count || retryData.results.length);
-              return;
-            }
-          } catch {
-            toastError('Municipal authority session required to access queue.');
-            return;
-          }
+          toastError('Municipal authority authorization required to access queue.');
+        } else {
+          toastError('Failed to load department complaint queue.');
         }
-        toastError('Failed to load department complaint queue.');
       }
     } finally {
       if (!silent) setIsLoading(false);

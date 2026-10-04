@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import RoleModal from '../components/auth/RoleModal';
 import s from './Landing.module.css';
 
 export default function Landing() {
@@ -7,6 +8,8 @@ export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeRow, setActiveRow] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [roleModalMode, setRoleModalMode] = useState('login');
 
   const scrollToSection = (id) => {
     setMobileMenuOpen(false);
@@ -119,13 +122,7 @@ export default function Landing() {
         <header className={s.navbar}>
           <Link to="/" className={s.navLeft}>
             <div className={s.brandLogoWrap}>
-              {/* Civic bridge geometric SVG */}
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 20h18" />
-                <path d="M4 20V10a8 8 0 0 1 16 0v10" />
-                <path d="M12 4v16" />
-                <path d="M8 12h8" />
-              </svg>
+              <img src="/logo-mark.png" alt="CivicSetu Logo" className={s.brandLogoImg} />
             </div>
             <span className={s.brandName}>CivicSetu</span>
           </Link>
@@ -139,13 +136,23 @@ export default function Landing() {
           </nav>
 
           <div className={s.navRight}>
-            <Link to="/track" className={s.navBtnGhost}>Track a Complaint</Link>
-            <Link to="/citizen/submit" className={s.navBtnPrimary}>
-              Report an Issue
+            <button
+              type="button"
+              className={s.navBtnGhost}
+              onClick={() => { setRoleModalMode('login'); setRoleModalOpen(true); }}
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              className={s.navBtnPrimary}
+              onClick={() => { setRoleModalMode('signup'); setRoleModalOpen(true); }}
+            >
+              Sign Up
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
-            </Link>
+            </button>
             <button
               type="button"
               className={s.mobileMenuBtn}
@@ -160,13 +167,19 @@ export default function Landing() {
         {/* Mobile dropdown */}
         {mobileMenuOpen && (
           <div className={s.mobileNavPanel}>
+            <div className={s.mobileNavBrand}>
+              <div className={s.brandLogoWrap}>
+                <img src="/logo-mark.png" alt="CivicSetu Logo" className={s.brandLogoImg} />
+              </div>
+              <span className={s.brandName}>CivicSetu</span>
+            </div>
             <button type="button" className={s.navLink} onClick={() => scrollToSection('hero')}>Product</button>
             <button type="button" className={s.navLink} onClick={() => scrollToSection('dilemma')}>Dilemma</button>
             <button type="button" className={s.navLink} onClick={() => scrollToSection('platform')}>Platform</button>
             <button type="button" className={s.navLink} onClick={() => scrollToSection('workflow')}>How It Works</button>
             <button type="button" className={s.navLink} onClick={() => scrollToSection('integrity')}>Integrity</button>
-            <Link to="/track" className={s.navBtnGhost} style={{ textAlign: 'center' }}>Track a Complaint</Link>
-            <Link to="/citizen/submit" className={s.navBtnPrimary} style={{ justifyContent: 'center' }}>Report an Issue</Link>
+            <button type="button" className={s.navBtnGhost} style={{ textAlign: 'center' }} onClick={() => { setMobileMenuOpen(false); setRoleModalMode('login'); setRoleModalOpen(true); }}>Login</button>
+            <button type="button" className={s.navBtnPrimary} style={{ justifyContent: 'center' }} onClick={() => { setMobileMenuOpen(false); setRoleModalMode('signup'); setRoleModalOpen(true); }}>Sign Up</button>
           </div>
         )}
 
@@ -384,10 +397,8 @@ export default function Landing() {
             <div className={s.registrySidebar}>
               <div>
                 <div className={s.sidebarBrand}>
-                  <div className={s.brandLogoWrap}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M3 20h18M4 20V10a8 8 0 0 1 16 0v10M12 4v16M8 12h8" />
-                    </svg>
+                  <div className={s.sidebarBrandLogoWrap}>
+                    <img src="/logo-mark.png" alt="CivicSetu Logo" className={s.brandLogoImg} />
                   </div>
                   <span className={s.sidebarBrandText}>CivicSetu</span>
                 </div>
@@ -745,7 +756,9 @@ export default function Landing() {
               </p>
 
               <div className={s.ctaTabletCard}>
-                <div className={s.ctaTabletIcon}>📱</div>
+                <div className={s.ctaTabletLogoWrap}>
+                  <img src="/logo-mark.png" alt="CivicSetu App" className={s.brandLogoImg} />
+                </div>
                 <div className={s.ctaTabletInfo}>
                   <span className={s.ctaTabletTitle}>CivicSetu Citizen Portal</span>
                   <span className={s.ctaTabletDesc}>Instant mobile-friendly reporting without downloading any app</span>
@@ -772,7 +785,12 @@ export default function Landing() {
             ============================================================ */}
         <footer className={s.footerSection}>
           <div className={s.footerTopRow}>
-            <span className={s.footerCopyright}>© 2026 CivicSetu. Built for sustainable Indian communities.</span>
+            <div className={s.footerBrandLeft}>
+              <div className={s.footerLogoWrap}>
+                <img src="/logo-mark.png" alt="CivicSetu Logo" className={s.brandLogoImg} />
+              </div>
+              <span className={s.footerCopyright}>© 2026 CivicSetu. Built for sustainable Indian communities.</span>
+            </div>
 
             <div className={s.footerLinks}>
               <button type="button" className={s.footerLink} onClick={() => scrollToSection('hero')}>Product</button>
@@ -780,23 +798,33 @@ export default function Landing() {
               <Link to="/citizen/submit" className={s.footerLink}>Report Grievance</Link>
               <Link to="/track" className={s.footerLink}>Track Complaint</Link>
               <Link to="/map" className={s.footerLink}>City Heatmap</Link>
-              <Link to="/login" className={s.footerLink}>Municipal Login</Link>
+              <Link to="/login/authority" className={s.footerLink}>Municipal Login</Link>
+              <button
+                type="button"
+                className={s.footerLink}
+                onClick={() => { setRoleModalMode('login'); setRoleModalOpen(true); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' }}
+              >
+                Role Portals ↗
+              </button>
             </div>
           </div>
 
           <div className={s.giantWordmarkRow}>
             <div className={s.giantLogoBridge}>
-              <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 20h18" />
-                <path d="M4 20V10a8 8 0 0 1 16 0v10" />
-                <path d="M12 4v16" />
-                <path d="M8 12h8" />
-              </svg>
+              <img src="/logo-mark.png" alt="CivicSetu Original Logo" className={s.giantLogoImg} />
             </div>
             <h1 className={s.giantWordmarkText}>CivicSetu</h1>
           </div>
         </footer>
       </div>
+
+      {/* Role Selection Modal for Login/Signup */}
+      <RoleModal
+        isOpen={roleModalOpen}
+        onClose={() => setRoleModalOpen(false)}
+        defaultMode={roleModalMode}
+      />
     </div>
   );
 }

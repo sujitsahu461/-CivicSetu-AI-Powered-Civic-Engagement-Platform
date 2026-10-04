@@ -19,6 +19,7 @@ export const showToast = (message: string, type: ToastType = 'info') => {
 
 export const useToast = () => {
   return {
+    showToast: (message: string, type: ToastType = 'info') => showToast(message, type),
     toast: (message: string, type: ToastType = 'info') => showToast(message, type),
     success: (message: string) => showToast(message, 'success'),
     error: (message: string) => showToast(message, 'error'),

@@ -31,7 +31,7 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({ isOpen = f
   const handleLogout = async () => {
     if (onClose) onClose();
     await logout();
-    navigate('/login');
+    navigate('/login/superadmin');
   };
 
   const initialLetter = user?.full_name?.charAt(0).toUpperCase() || 'S';

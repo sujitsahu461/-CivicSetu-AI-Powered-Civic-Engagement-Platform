@@ -246,11 +246,24 @@ export const AuthorityDashboard: React.FC = () => {
               <h4>Municipal SLA Benchmark</h4>
             </div>
             <div className={s.slaMetric}>
-              <span className={s.slaVal}>94.8%</span>
+              <span className={s.slaVal}>
+                {summary && summary.total_complaints > 0
+                  ? `${(((summary.resolved || 0) / summary.total_complaints) * 100).toFixed(1)}%`
+                  : (summary ? '100.0%' : '—')}
+              </span>
               <span className={s.slaLabel}>On-Time Resolution Compliance</span>
             </div>
             <div className={s.slaProgress}>
-              <div className={s.slaBar} style={{ width: '94.8%' }}></div>
+              <div
+                className={s.slaBar}
+                style={{
+                  width: `${
+                    summary && summary.total_complaints > 0
+                      ? Math.min(100, Math.round(((summary.resolved || 0) / summary.total_complaints) * 100))
+                      : (summary ? 100 : 0)
+                  }%`,
+                }}
+              ></div>
             </div>
             <p className={s.slaNote}>
               Standard TAT benchmark for department is <strong>24 to 48 hours</strong>. Urgent safety incidents require crew dispatch within <strong>2 hours</strong>.

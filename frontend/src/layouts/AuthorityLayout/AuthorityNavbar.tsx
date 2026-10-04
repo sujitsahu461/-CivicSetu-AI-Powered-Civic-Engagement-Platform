@@ -84,7 +84,7 @@ export const AuthorityNavbar: React.FC = () => {
           <button
             onClick={async () => {
               await logout();
-              navigate('/login');
+              navigate('/login/authority');
             }}
             title="Sign Out"
             className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors border border-red-500/20"

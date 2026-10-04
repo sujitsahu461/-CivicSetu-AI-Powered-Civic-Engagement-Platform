@@ -60,7 +60,7 @@ export const CitizenLayout: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/login/citizen');
   };
 
   const displayName = user?.full_name ? user.full_name.split(' ')[0] : 'Citizen';
@@ -181,7 +181,7 @@ export const CitizenLayout: React.FC = () => {
                 </div>
               </>
             ) : (
-              <Link to="/login" className={s.signInBtn}>
+              <Link to="/login/citizen" className={s.signInBtn}>
                 <Icon name="login" size={17} />
                 <span>Sign In / Register</span>
               </Link>
@@ -236,7 +236,7 @@ export const CitizenLayout: React.FC = () => {
               </>
             ) : (
               <Link
-                to="/login"
+                to="/login/citizen"
                 className={s.mobileNavLink}
                 onClick={() => setMobileMenuOpen(false)}
               >

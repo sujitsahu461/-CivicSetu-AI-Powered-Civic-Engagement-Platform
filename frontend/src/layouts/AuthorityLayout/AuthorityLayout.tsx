@@ -59,7 +59,7 @@ export const AuthorityLayout: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/login/authority');
   };
 
   const displayName = user?.full_name ? user.full_name.split(' ')[0] : 'Officer';

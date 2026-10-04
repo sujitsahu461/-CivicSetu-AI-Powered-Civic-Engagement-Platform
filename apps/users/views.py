@@ -215,3 +215,174 @@ class UserDetailView(APIView):
                 {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
         return Response(AdminProfileSerializer(user).data)
+
+    @extend_schema(
+        tags=["User Management"],
+        summary="Update user by public ID (Super Admin only)",
+        description="Update user status, role, phone, or details.",
+    )
+    def patch(self, request, public_id):
+        if getattr(request.user, "role", None) != UserRole.SUPER_ADMIN and not request.user.is_superuser:
+            return Response(
+                {"detail": "Only Super Admin can update users."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        try:
+            target_user = User.objects.get(public_id=public_id)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        data = request.data
+        if "is_active" in data:
+            target_user.is_active = bool(data["is_active"])
+            target_user.status = UserStatus.ACTIVE if target_user.is_active else UserStatus.SUSPENDED
+        if "role" in data and data["role"] in [c[0] for c in UserRole.choices]:
+            target_user.role = data["role"]
+            if data["role"] == UserRole.SUPER_ADMIN:
+                target_user.is_staff = True
+            elif data["role"] == UserRole.CITIZEN:
+                target_user.is_staff = False
+        if "full_name" in data and data["full_name"]:
+            target_user.full_name = data["full_name"]
+        if "phone" in data:
+            target_user.phone = data["phone"]
+        if "department" in data:
+            target_user.department = data["department"]
+        if "designation" in data:
+            target_user.designation = data["designation"]
+
+        target_user.save()
+
+        # Log audit entry
+        try:
+            from apps.audit_logs.models import AuditAction, AuditLog
+            AuditLog.objects.create(
+                actor=request.user,
+                actor_email=request.user.email,
+                actor_role=request.user.role,
+                action=AuditAction.PROFILE_UPDATE,
+                entity_type="User",
+                entity_id=str(target_user.public_id),
+                ip_address=request.META.get("REMOTE_ADDR", "127.0.0.1"),
+                metadata={
+                    "email": target_user.email,
+                    "role": target_user.role,
+                    "is_active": target_user.is_active,
+                },
+            )
+        except Exception:
+            pass
+
+        return Response(AdminProfileSerializer(target_user).data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        tags=["User Management"],
+        summary="Delete / Deactivate user by public ID (Super Admin only)",
+    )
+    def delete(self, request, public_id):
+        if getattr(request.user, "role", None) != UserRole.SUPER_ADMIN and not request.user.is_superuser:
+            return Response(
+                {"detail": "Only Super Admin can delete users."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        try:
+            target_user = User.objects.get(public_id=public_id)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if target_user == request.user:
+            return Response(
+                {"detail": "You cannot delete your own Super Admin account."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        target_user.is_active = False
+        target_user.status = UserStatus.SUSPENDED
+        target_user.save()
+
+        return Response(
+            {"detail": f"User {target_user.email} suspended successfully."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminUserCreateView(APIView):
+    """Enrolls a new user across any role (Super Admin only)."""
+
+    permission_classes = [IsAuthenticated, IsSuperAdmin, IsActiveUser]
+
+    @extend_schema(
+        tags=["User Management"],
+        summary="Create new platform user (Super Admin only)",
+        description="Enrolls a new user with any role, full credentials, and optional department assignment.",
+    )
+    def post(self, request):
+        from apps.accounts.services import UserRegistrationService
+
+        data = request.data
+        email = data.get("email", "").strip()
+        full_name = data.get("full_name", "").strip()
+        password = data.get("password", "CivicSetu@12345")
+        role = data.get("role", UserRole.CITIZEN)
+        phone = data.get("phone", "")
+        department = data.get("department", "")
+        designation = data.get("designation", "")
+
+        if not email or not full_name:
+            return Response(
+                {"detail": "Email and Full Name are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        if User.objects.filter(email__iexact=email).exists():
+            return Response(
+                {"detail": "A user with this email address already exists."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = UserRegistrationService.register_user(
+            email=email,
+            password=password,
+            full_name=full_name,
+            phone=phone,
+            role=role,
+            department=department,
+            designation=designation,
+        )
+
+        # Log audit entry
+        try:
+            from apps.audit_logs.models import AuditAction, AuditLog
+            AuditLog.objects.create(
+                actor=request.user,
+                actor_email=request.user.email,
+                actor_role=request.user.role,
+                action=AuditAction.AUTH_REGISTER,
+                entity_type="User",
+                entity_id=str(user.public_id),
+                ip_address=request.META.get("REMOTE_ADDR", "127.0.0.1"),
+                metadata={
+                    "email": user.email,
+                    "role": user.role,
+                    "full_name": user.full_name,
+                },
+            )
+        except Exception:
+            pass
+
+        return Response(AdminProfileSerializer(user).data, status=status.HTTP_201_CREATED)

@@ -38,6 +38,41 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     if (!originalRequest) return Promise.reject(error);
 
+    // Extract readable error message from response data if available
+    if (error.response?.data) {
+      const d = error.response.data;
+      if (typeof d === 'string' && d.length < 250) {
+        error.message = d;
+      } else if (d.detail && typeof d.detail === 'string') {
+        error.message = d.detail;
+      } else if (d.message && typeof d.message === 'string') {
+        error.message = d.message;
+      } else if (typeof d === 'object') {
+        const msgs: string[] = [];
+        for (const [k, v] of Object.entries(d)) {
+          const text = Array.isArray(v) ? v.join(' ') : String(v);
+          const field = k === 'non_field_errors' ? '' : `${k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}: `;
+          msgs.push(`${field}${text}`);
+        }
+        if (msgs.length > 0) {
+          error.message = msgs.join(' | ');
+        }
+      }
+    }
+
+    // Handle 429 Too Many Requests (rate limiting)
+    if (error.response?.status === 429) {
+      const retryAfter = error.response.headers?.['retry-after'];
+      const waitMsg = retryAfter
+        ? `Please wait ${retryAfter} seconds before trying again.`
+        : 'Please wait a moment before trying again.';
+      const rateLimitError = new Error(
+        `Too many requests. ${waitMsg}`
+      );
+      (rateLimitError as any).response = error.response;
+      return Promise.reject(rateLimitError);
+    }
+
     // Handle 401 Unauthorized for token refresh (exclude public login/register/auth endpoints)
     const isAuthRoute =
       originalRequest.url?.includes('/auth/login') ||
@@ -65,7 +100,14 @@ api.interceptors.response.use(
         } catch {
           localStorage.removeItem('civicsetu_access_token');
           localStorage.removeItem('civicsetu_refresh_token');
-          window.location.href = '/login';
+          const path = window.location.pathname;
+          if (path.includes('/authority')) {
+            window.location.href = '/login/authority';
+          } else if (path.includes('/superadmin')) {
+            window.location.href = '/login/superadmin';
+          } else {
+            window.location.href = '/login/citizen';
+          }
         }
       }
     }

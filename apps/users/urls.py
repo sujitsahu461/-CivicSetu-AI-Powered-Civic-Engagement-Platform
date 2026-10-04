@@ -2,6 +2,7 @@ from django.urls import path
 
 from apps.users.views import (
     AdminProfileView,
+    AdminUserCreateView,
     AuthorityProfileView,
     ChangePasswordView,
     CitizenProfileView,
@@ -22,7 +23,8 @@ urlpatterns = [
     path("profile/upload-image/", UploadProfileImageView.as_view(), name="user-profile-upload-image"),
     # Password
     path("change-password/", ChangePasswordView.as_view(), name="user-change-password"),
-    # Admin search & detail
+    # Admin search, create & detail
     path("search/", UserSearchView.as_view(), name="user-search"),
+    path("create/", AdminUserCreateView.as_view(), name="user-create-admin"),
     path("<uuid:public_id>/", UserDetailView.as_view(), name="user-detail"),
 ]

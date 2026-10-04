@@ -77,16 +77,6 @@ export const authService = {
     return res.data;
   },
 
-  async switchRole(role: 'CITIZEN' | 'AUTHORITY' | 'SUPER_ADMIN'): Promise<AuthResponse> {
-    const res = await api.post<AuthResponse>('/auth/switch-role/', { role });
-    const data = res.data;
-    if (data.tokens?.access) {
-      localStorage.setItem('civicsetu_access_token', data.tokens.access);
-      localStorage.setItem('civicsetu_refresh_token', data.tokens.refresh);
-    }
-    return data;
-  },
-
   async updateProfile(payload: Partial<User>): Promise<User> {
     const res = await api.patch<User>('/users/profile/update/', payload);
     return res.data;

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import useComplaintStore from '../../store/complaintStore';
+import { ComplaintCategory, ComplaintPriority } from '../../types/complaint';
 import { useToast } from '../../components/ui/Toast';
 import Icon from '../../components/ui/Icon';
 import LocationPicker from '../../components/map/LocationPicker';
@@ -25,8 +26,8 @@ export const SubmitComplaint: React.FC = () => {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('ROAD');
-  const [selectedPriority, setSelectedPriority] = useState<string>('MEDIUM');
+  const [selectedCategory, setSelectedCategory] = useState<ComplaintCategory>('ROAD');
+  const [selectedPriority, setSelectedPriority] = useState<ComplaintPriority>('MEDIUM');
   const [address, setAddress] = useState('');
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
@@ -36,7 +37,7 @@ export const SubmitComplaint: React.FC = () => {
   // AI Live Classification State
   const [aiPrediction, setAiPrediction] = useState<AIClassificationResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeReqIdRef = useRef<number>(0);
 
   const [geoLoading, setGeoLoading] = useState(false);
@@ -73,10 +74,10 @@ export const SubmitComplaint: React.FC = () => {
         if (currentReqId === activeReqIdRef.current) {
           setAiPrediction(result);
           if (result?.predicted_category) {
-            setSelectedCategory(result.predicted_category);
+            setSelectedCategory(result.predicted_category as ComplaintCategory);
           }
           if (result?.predicted_priority) {
-            setSelectedPriority(result.predicted_priority);
+            setSelectedPriority(result.predicted_priority as ComplaintPriority);
           }
         }
       } catch (err) {

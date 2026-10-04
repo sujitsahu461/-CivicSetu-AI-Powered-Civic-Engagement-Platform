@@ -19,7 +19,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    if (allowedRoles?.includes('AUTHORITY') && !allowedRoles?.includes('CITIZEN')) {
+      return <Navigate to="/login/authority" replace />;
+    }
+    if (allowedRoles?.includes('SUPER_ADMIN') && !allowedRoles?.includes('CITIZEN')) {
+      return <Navigate to="/login/superadmin" replace />;
+    }
+    return <Navigate to="/login/citizen" replace />;
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {

@@ -15,114 +15,16 @@
 }
 
 /* ============================================================
-   1. LEFT SIDEBAR NAVIGATION
-   ============================================================ */
-.sidebar {
-  width: 242px;
-  min-width: 242px;
-  background: #ffffff;
-  border-right: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 18px 12px 18px 14px;
-  box-sizing: border-box;
-  position: sticky;
-  top: 64px;
-  height: calc(100vh - 64px);
-  overflow-y: auto;
-  z-index: 10;
-}
-
-.sidebarTop {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.navSection {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.navItem {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 9px 12px;
-  border-radius: 9px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #475569;
-  text-decoration: none;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-  transition: all 0.16s ease;
-  box-sizing: border-box;
-}
-
-.navItem:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-.navItemActive {
-  background: #eff6ff;
-  color: #2563eb;
-  font-weight: 600;
-}
-
-/* Bottom Sidebar Card */
-.sidebarEcoCard {
-  background: linear-gradient(180deg, #e0f2fe 0%, #eff6ff 45%, #dbeafe 100%);
-  border: 1px solid #bfdbfe;
-  border-radius: 14px;
-  padding: 14px 14px 10px;
-  margin-top: 18px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
-}
-
-.ecoCardTitle {
-  font-size: 13.5px;
-  font-weight: 800;
-  color: #0c1b33;
-  line-height: 1.25;
-  margin-bottom: 2px;
-}
-
-.ecoCardTitleGreen {
-  color: #059669;
-}
-
-.ecoCardSub {
-  font-size: 11px;
-  line-height: 1.4;
-  color: #475569;
-  margin-bottom: 10px;
-}
-
-.skylineSvg {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 6px;
-}
-
-/* ============================================================
-   2. MAIN CONTENT AREA
+   MAIN CONTENT AREA (FULL-WIDTH ANALYTICS DASHBOARD)
    ============================================================ */
 .mainContent {
-  flex: 1;
-  padding: 20px 26px 48px;
+  width: 100%;
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 24px 32px 48px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   min-width: 0;
   box-sizing: border-box;
 }

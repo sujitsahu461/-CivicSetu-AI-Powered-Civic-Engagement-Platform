@@ -32,7 +32,7 @@ export const SuperAdminLayout: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/login/superadmin');
   };
 
   const navLinks = [
@@ -69,49 +69,37 @@ export const SuperAdminLayout: React.FC = () => {
             </div>
           </Link>
 
-          {/* Center: Global Search Bar for Directory, or Navigation Links for Dashboard */}
-          {isUserDirectory ? (
-            <div className={s.centerSearchBar}>
-              <Icon name="search" size={17} className={s.centerSearchIcon} />
-              <input
-                type="text"
-                placeholder="Search users, complaints, departments, or anything..."
-                className={s.centerSearchInput}
-              />
-              <span className={s.kbdShortcut}>⌘ K</span>
-            </div>
-          ) : (
-            <nav className={s.navLinks}>
-              {navLinks.map((item) => {
-                if (item.isModal) {
-                  const isModalOpen = activeModal === item.isModal;
-                  return (
-                    <button
-                      key={item.label}
-                      type="button"
-                      className={`${s.navLink} ${isModalOpen ? s.activeNavLink : ''}`}
-                      onClick={() => setActiveModal(item.isModal as 'audit' | 'settings')}
-                    >
-                      <Icon name={item.icon} size={17} />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                }
-
-                const isActive = location.pathname === item.path;
+          {/* Center: Navigation Links */}
+          <nav className={s.navLinks}>
+            {navLinks.map((item) => {
+              if (item.isModal) {
+                const isModalOpen = activeModal === item.isModal;
                 return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`${s.navLink} ${isActive ? s.activeNavLink : ''}`}
+                  <button
+                    key={item.label}
+                    type="button"
+                    className={`${s.navLink} ${isModalOpen ? s.activeNavLink : ''}`}
+                    onClick={() => setActiveModal(item.isModal as 'audit' | 'settings')}
                   >
                     <Icon name={item.icon} size={17} />
                     <span>{item.label}</span>
-                  </Link>
+                  </button>
                 );
-              })}
-            </nav>
-          )}
+              }
+
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`${s.navLink} ${isActive ? s.activeNavLink : ''}`}
+                >
+                  <Icon name={item.icon} size={17} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
           {/* Right: User Controls & Notification */}
           <div className={s.navRight}>
@@ -135,9 +123,9 @@ export const SuperAdminLayout: React.FC = () => {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 aria-label="User Menu"
               >
-                <div className={s.userAvatar}>S</div>
+                <div className={s.userAvatar}>{user?.full_name ? user.full_name[0].toUpperCase() : 'S'}</div>
                 <div className={s.userMetaCol}>
-                  <span className={s.userName}>Super Admin</span>
+                  <span className={s.userName}>{user?.full_name || 'Super Admin'}</span>
                   <span className={s.userRoleSub}>System Administrator</span>
                 </div>
                 <Icon
@@ -155,12 +143,20 @@ export const SuperAdminLayout: React.FC = () => {
                     <div className={s.dropdownDeptTag}>Municipal Platform Administration</div>
                   </div>
 
-                  <Link to="/superadmin/dashboard" className={s.dropdownItem}>
+                  <Link
+                    to="/superadmin/dashboard"
+                    className={s.dropdownItem}
+                    onClick={() => setDropdownOpen(false)}
+                  >
                     <Icon name="space_dashboard" size={17} />
                     <span>Admin Dashboard</span>
                   </Link>
 
-                  <Link to="/superadmin/users" className={s.dropdownItem}>
+                  <Link
+                    to="/superadmin/users"
+                    className={s.dropdownItem}
+                    onClick={() => setDropdownOpen(false)}
+                  >
                     <Icon name="group" size={17} />
                     <span>User Directory</span>
                   </Link>

@@ -82,6 +82,25 @@ class ComplaintFeedbackInlineSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class ComplaintFeedbackPublicInlineSerializer(serializers.ModelSerializer):
+    """Public feedback representation for tracking, without citizen PII."""
+
+    class Meta:
+        from apps.feedback.models import Feedback
+        model = Feedback
+        fields = (
+            "public_id",
+            "rating",
+            "satisfaction_level",
+            "resolution_quality",
+            "timeliness",
+            "comments",
+            "is_issue_resolved",
+            "created_at",
+        )
+        read_only_fields = fields
+
+
 class ComplaintListSerializer(serializers.ModelSerializer):
     """Lightweight summary serializer for complaints list view."""
 
@@ -262,7 +281,7 @@ class ComplaintTrackingSerializer(serializers.ModelSerializer):
 
     category_display = serializers.CharField(source="get_category_display", read_only=True)
     images = ComplaintImageSerializer(many=True, read_only=True)
-    feedback = ComplaintFeedbackInlineSerializer(read_only=True)
+    feedback = ComplaintFeedbackPublicInlineSerializer(read_only=True)
 
     class Meta:
         model = Complaint

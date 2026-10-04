@@ -82,7 +82,7 @@ export const CitizenHeader: React.FC = () => {
             <button
               onClick={async () => {
                 await logout();
-                navigate('/login');
+                navigate('/login/citizen');
               }}
               className="px-3 py-1.5 text-xs font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors"
             >
@@ -92,13 +92,13 @@ export const CitizenHeader: React.FC = () => {
         ) : (
           <div className="flex items-center gap-2">
             <Link
-              to="/login"
+              to="/login/citizen"
               className="px-3.5 py-1.5 text-xs font-semibold text-gray-300 hover:text-white transition-colors"
             >
               Sign In
             </Link>
             <Link
-              to="/signup"
+              to="/signup/citizen"
               className="px-3.5 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
             >
               Register

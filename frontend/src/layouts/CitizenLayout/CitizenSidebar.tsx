@@ -107,7 +107,7 @@ export const CitizenSidebar: React.FC = () => {
         <button
           onClick={async () => {
             await logout();
-            navigate('/login');
+            navigate('/login/citizen');
           }}
           className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors"
         >

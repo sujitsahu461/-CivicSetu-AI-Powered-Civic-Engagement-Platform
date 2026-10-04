@@ -5,6 +5,7 @@ import {
   RegisterPayload,
   ResetPasswordPayload,
   User,
+  UserRole,
 } from '../types/user';
 import { authService } from '../services/auth.service';
 import { useComplaintStore } from './complaintStore';
@@ -17,7 +18,6 @@ interface AuthStore {
   login: (credentials: LoginCredentials) => Promise<User>;
   register: (payload: RegisterPayload) => Promise<AuthResponse>;
   logout: () => Promise<void>;
-  switchRole: (role: UserRole) => Promise<User>;
   checkAuth: () => Promise<User | null>;
   forgotPassword: (email: string) => Promise<{
     message: string;
@@ -41,22 +41,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
   clearError: () => set({ error: null }),
   setUser: (user) => set({ user, isAuthenticated: !!user }),
 
-  switchRole: async (role: UserRole) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await authService.switchRole(role);
-      let user = response.user;
-      if (!user) {
-        user = await authService.getCurrentUser();
-      }
-      set({ user, isAuthenticated: true, isLoading: false, error: null });
-      return user;
-    } catch (err: any) {
-      set({ isLoading: false });
-      throw err;
-    }
-  },
-
   login: async (credentials) => {
     set({ isLoading: true, error: null });
     try {
@@ -68,26 +52,30 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ user, isAuthenticated: true, isLoading: false, error: null });
       return user;
     } catch (err: any) {
+      const status = err.response?.status;
       const data = err.response?.data;
       let msg = 'Authentication failed. Please check your credentials.';
-      if (typeof data === 'string') {
+      if (status === 429) {
+        msg = err.message || 'Too many login attempts. Please wait a moment before trying again.';
+      } else if (typeof data === 'string' && data.length < 300) {
         msg = data;
       } else if (data?.detail) {
         msg = data.detail;
-      } else if (data?.non_field_errors) {
-        msg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
-      } else if (data?.captcha_code) {
-        msg = Array.isArray(data.captcha_code) ? data.captcha_code[0] : data.captcha_code;
-      } else if (data?.email) {
-        msg = Array.isArray(data.email) ? data.email[0] : data.email;
-      } else if (data?.password) {
-        msg = Array.isArray(data.password) ? data.password[0] : data.password;
-      } else if (data?.message) {
-        msg = data.message;
       } else if (data && typeof data === 'object') {
-        const firstVal = Object.values(data)[0];
-        msg = Array.isArray(firstVal) ? String(firstVal[0]) : String(firstVal);
-      } else if (err.message) {
+        const fieldErrors: string[] = [];
+        for (const [key, value] of Object.entries(data)) {
+          const valText = Array.isArray(value) ? value.join(' ') : String(value);
+          if (key === 'non_field_errors' || key === 'detail') {
+            fieldErrors.push(valText);
+          } else {
+            const fieldName = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+            fieldErrors.push(`${fieldName}: ${valText}`);
+          }
+        }
+        if (fieldErrors.length > 0) {
+          msg = fieldErrors.join(' | ');
+        }
+      } else if (err.message && !err.message.includes('status code')) {
         msg = err.message;
       }
       set({ error: msg, isLoading: false, isAuthenticated: false });
@@ -110,21 +98,30 @@ export const useAuthStore = create<AuthStore>((set) => ({
       }
       return response;
     } catch (err: any) {
+      const status = err.response?.status;
       const data = err.response?.data;
       let msg = 'Registration failed. Please check your inputs.';
-      if (typeof data === 'string') {
+      if (status === 429) {
+        msg = err.message || 'Too many registration attempts. Please wait a moment before trying again.';
+      } else if (typeof data === 'string' && data.length < 300) {
         msg = data;
       } else if (data?.detail) {
         msg = data.detail;
-      } else if (data?.email) {
-        msg = Array.isArray(data.email) ? data.email[0] : data.email;
-      } else if (data?.password) {
-        msg = Array.isArray(data.password) ? data.password[0] : data.password;
-      } else if (data?.non_field_errors) {
-        msg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
-      } else if (data?.message) {
-        msg = data.message;
-      } else if (err.message) {
+      } else if (data && typeof data === 'object') {
+        const fieldErrors: string[] = [];
+        for (const [key, value] of Object.entries(data)) {
+          const valText = Array.isArray(value) ? value.join(' ') : String(value);
+          if (key === 'non_field_errors' || key === 'detail') {
+            fieldErrors.push(valText);
+          } else {
+            const fieldName = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+            fieldErrors.push(`${fieldName}: ${valText}`);
+          }
+        }
+        if (fieldErrors.length > 0) {
+          msg = fieldErrors.join(' | ');
+        }
+      } else if (err.message && !err.message.includes('status code')) {
         msg = err.message;
       }
       set({ error: msg, isLoading: false });
