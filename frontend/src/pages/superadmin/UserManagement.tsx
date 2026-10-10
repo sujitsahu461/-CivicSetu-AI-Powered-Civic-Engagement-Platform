@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import adminService from '../../services/admin.service';
 import { useToast } from '../../components/ui/Toast';
 import Icon from '../../components/ui/Icon';
@@ -179,6 +178,9 @@ export const UserManagement: React.FC = () => {
   const [usersList, setUsersList] = useState<DirectoryUser[]>([]);
   const [_isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [activeSidebarSub, setActiveSidebarSub] = useState<
     'all' | 'citizen' | 'authority' | 'superadmin' | 'requests'
   >('all');
@@ -216,6 +218,22 @@ export const UserManagement: React.FC = () => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 30000);
     return () => clearInterval(timer);
   }, []);
+
+  // Close details drawer on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsDetailsDrawerOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Reset page when filter criteria change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeSidebarSub, searchQuery, roleFilter, statusFilter, deptFilter, wardFilter, sortBy]);
 
   const loadLiveUsers = async () => {
     setIsLoading(true);
@@ -287,6 +305,24 @@ export const UserManagement: React.FC = () => {
       return true;
     });
   }, [usersList, activeSidebarSub, searchQuery, roleFilter, statusFilter, deptFilter, wardFilter]);
+
+  // Sorted list of users
+  const sortedAndFilteredUsers = useMemo(() => {
+    const list = [...filteredUsers];
+    if (sortBy === 'Name') {
+      list.sort((a, b) => a.full_name.localeCompare(b.full_name));
+    } else if (sortBy === 'Oldest') {
+      list.reverse();
+    }
+    return list;
+  }, [filteredUsers, sortBy]);
+
+  // Paginated Users Slice
+  const totalPages = Math.max(1, Math.ceil(sortedAndFilteredUsers.length / pageSize));
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return sortedAndFilteredUsers.slice(start, start + pageSize);
+  }, [sortedAndFilteredUsers, currentPage, pageSize]);
 
   // Selected User Object
   const selectedUser = useMemo(() => {
@@ -665,14 +701,14 @@ export const UserManagement: React.FC = () => {
           </button>
         </div>
 
-        {/* 5. SPLIT TWO-COLUMN MAIN VIEW */}
+        {/* 5. FULL-WIDTH USER DIRECTORY */}
         <div className={s.splitGrid}>
-          {/* LEFT COLUMN: USERS LIST TABLE CARD */}
+          {/* FULL-WIDTH USERS LIST TABLE CARD */}
           <div className={s.tableCard}>
             {/* Card Toolbar */}
             <div className={s.tableHeader}>
               <div className={s.tableTitle}>
-                Users ({filteredUsers.length.toLocaleString()})
+                Users ({sortedAndFilteredUsers.length.toLocaleString()})
               </div>
 
               <div className={s.tableControls}>
@@ -716,308 +752,374 @@ export const UserManagement: React.FC = () => {
               </div>
             </div>
 
-            {/* Table wrapper */}
-            <div className={s.tableWrapper}>
-              <table className={s.table}>
-                <thead>
-                  <tr>
-                    <th style={{ width: 34 }}>
-                      <input type="checkbox" className={s.checkbox} />
-                    </th>
-                    <th>User</th>
-                    <th>Role</th>
-                    <th>Contact</th>
-                    <th>Department / Ward</th>
-                    <th>Status</th>
-                    <th>Joined On</th>
-                    <th style={{ textAlign: 'center' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map((u) => {
-                    const isSelected = selectedUser?.id === u.id;
-                    const roleBadgeClass =
-                      u.role === 'SUPER_ADMIN'
-                        ? s.badgeSuperAdmin
-                        : u.role === 'AUTHORITY'
-                        ? s.badgeAuthority
-                        : s.badgeCitizen;
+            {/* Display: Grid View or Full-Width Table */}
+            {viewMode === 'grid' ? (
+              <div className={s.userGrid}>
+                {paginatedUsers.map((u) => {
+                  const isSelected = selectedUser?.id === u.id;
+                  const roleBadgeClass =
+                    u.role === 'SUPER_ADMIN'
+                      ? s.badgeSuperAdmin
+                      : u.role === 'AUTHORITY'
+                      ? s.badgeAuthority
+                      : s.badgeCitizen;
 
-                    return (
-                      <tr
-                        key={u.id}
-                        className={`${s.tableRow} ${isSelected ? s.tableRowSelected : ''}`}
-                        onClick={() => setSelectedUserId(u.id)}
-                      >
-                        <td onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => setSelectedUserId(u.id)}
-                            className={s.checkbox}
-                          />
-                        </td>
-
-                        {/* User Identity */}
-                        <td>
-                          <div className={s.userCell}>
-                            {u.avatar_url ? (
-                              <img src={u.avatar_url} alt={u.full_name} className={s.avatarImg} />
-                            ) : (
-                              <div
-                                className={s.avatarCircle}
-                                style={{ background: u.avatar_bg || '#2563eb' }}
-                              >
-                                {u.initials}
-                              </div>
-                            )}
-                            <div className={s.userNameCol}>
-                              <span className={s.rowUserName}>{u.full_name}</span>
-                              <span className={s.rowUserEmail}>{u.email}</span>
+                  return (
+                    <div
+                      key={u.id}
+                      className={`${s.userGridCard} ${
+                        isSelected && isDetailsDrawerOpen ? s.userGridCardSelected : ''
+                      }`}
+                      onClick={() => {
+                        setSelectedUserId(u.id);
+                        setIsDetailsDrawerOpen(true);
+                      }}
+                    >
+                      <div className={s.gridCardTop}>
+                        <div className={s.gridCardUser}>
+                          {u.avatar_url ? (
+                            <img src={u.avatar_url} alt={u.full_name} className={s.avatarImg} />
+                          ) : (
+                            <div
+                              className={s.avatarCircle}
+                              style={{ background: u.avatar_bg || '#2563eb' }}
+                            >
+                              {u.initials}
                             </div>
+                          )}
+                          <div className={s.userNameCol}>
+                            <span className={s.rowUserName}>{u.full_name}</span>
+                            <span className={s.rowUserEmail}>{u.email}</span>
                           </div>
-                        </td>
+                        </div>
+                        <span
+                          className={`${s.statusPill} ${
+                            u.is_active ? s.statusActive : s.statusInactive
+                          }`}
+                        >
+                          <span className={s.statusDot} />
+                          <span>{u.is_active ? 'Active' : 'Inactive'}</span>
+                        </span>
+                      </div>
 
-                        {/* Role */}
-                        <td>
+                      <div className={s.gridCardMeta}>
+                        <div className={s.gridMetaRow}>
                           <span className={`${s.badgeRole} ${roleBadgeClass}`}>
                             {u.role === 'SUPER_ADMIN' ? 'SUPER ADMIN' : u.role}
                           </span>
-                        </td>
-
-                        {/* Contact */}
-                        <td>
-                          <span className={s.rowPhone}>{u.phone}</span>
-                        </td>
-
-                        {/* Department / Ward */}
-                        <td>
-                          <span className={s.rowDeptWard}>
+                          <span style={{ fontSize: 11, color: '#94a3b8' }}>ID: {u.id}</span>
+                        </div>
+                        <div className={s.gridMetaRow}>
+                          <Icon name="domain" size={13} style={{ color: '#94a3b8' }} />
+                          <span>
                             {u.department && u.department !== '—'
                               ? `${u.department} ${u.ward ? `/ ${u.ward}` : ''}`
                               : u.ward || '—'}
                           </span>
-                        </td>
+                        </div>
+                        <div className={s.gridMetaRow}>
+                          <Icon name="call" size={13} style={{ color: '#94a3b8' }} />
+                          <span>{u.phone}</span>
+                        </div>
+                      </div>
 
-                        {/* Status */}
-                        <td>
-                          <span
-                            className={`${s.statusPill} ${
-                              u.is_active ? s.statusActive : s.statusInactive
-                            }`}
-                          >
-                            <span className={s.statusDot} />
-                            <span>{u.is_active ? 'Active' : 'Inactive'}</span>
-                          </span>
-                        </td>
+                      <div className={s.gridCardFooter}>
+                        <span style={{ fontSize: 11, color: '#94a3b8' }}>{u.joined_date}</span>
+                        <button
+                          type="button"
+                          className={s.btnInspectAction}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedUserId(u.id);
+                            setIsDetailsDrawerOpen(true);
+                          }}
+                        >
+                          <Icon name="visibility" size={14} />
+                          <span>View Details</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className={s.tableWrapper}>
+                <table className={s.table}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: 34 }}>
+                        <input type="checkbox" className={s.checkbox} />
+                      </th>
+                      <th>User</th>
+                      <th>Role</th>
+                      <th>Contact</th>
+                      <th>Department / Ward</th>
+                      <th>Status</th>
+                      <th>Joined On</th>
+                      <th style={{ textAlign: 'center', width: 140 }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedUsers.map((u) => {
+                      const isSelected = selectedUser?.id === u.id;
+                      const roleBadgeClass =
+                        u.role === 'SUPER_ADMIN'
+                          ? s.badgeSuperAdmin
+                          : u.role === 'AUTHORITY'
+                          ? s.badgeAuthority
+                          : s.badgeCitizen;
 
-                        {/* Joined On */}
-                        <td>
-                          <div className={s.rowDateCol}>
-                            <span className={s.rowDate}>{u.joined_date}</span>
-                            <span className={s.rowTime}>{u.joined_time}</span>
-                          </div>
-                        </td>
+                      return (
+                        <tr
+                          key={u.id}
+                          className={`${s.tableRow} ${
+                            isSelected && isDetailsDrawerOpen ? s.tableRowSelected : ''
+                          }`}
+                          onClick={() => {
+                            setSelectedUserId(u.id);
+                            setIsDetailsDrawerOpen(true);
+                          }}
+                          title="Click to view full user account details"
+                        >
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => setSelectedUserId(u.id)}
+                              className={s.checkbox}
+                            />
+                          </td>
 
-                        {/* Actions */}
-                        <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
-                          <button
-                            type="button"
-                            className={s.btnRowAction}
-                            onClick={() => setSelectedUserId(u.id)}
-                            title="Inspect User Details"
-                          >
-                            <Icon name="more_horiz" size={17} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          {/* User Identity */}
+                          <td>
+                            <div className={s.userCell}>
+                              {u.avatar_url ? (
+                                <img src={u.avatar_url} alt={u.full_name} className={s.avatarImg} />
+                              ) : (
+                                <div
+                                  className={s.avatarCircle}
+                                  style={{ background: u.avatar_bg || '#2563eb' }}
+                                >
+                                  {u.initials}
+                                </div>
+                              )}
+                              <div className={s.userNameCol}>
+                                <span className={s.rowUserName}>{u.full_name}</span>
+                                <span className={s.rowUserEmail}>{u.email}</span>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Role */}
+                          <td>
+                            <span className={`${s.badgeRole} ${roleBadgeClass}`}>
+                              {u.role === 'SUPER_ADMIN' ? 'SUPER ADMIN' : u.role}
+                            </span>
+                          </td>
+
+                          {/* Contact */}
+                          <td>
+                            <span className={s.rowPhone}>{u.phone}</span>
+                          </td>
+
+                          {/* Department / Ward */}
+                          <td>
+                            <span className={s.rowDeptWard}>
+                              {u.department && u.department !== '—'
+                               ? `${u.department} ${u.ward ? `/ ${u.ward}` : ''}`
+                                : u.ward || '—'}
+                            </span>
+                          </td>
+
+                          {/* Status */}
+                          <td>
+                            <span
+                              className={`${s.statusPill} ${
+                                u.is_active ? s.statusActive : s.statusInactive
+                              }`}
+                            >
+                              <span className={s.statusDot} />
+                              <span>{u.is_active ? 'Active' : 'Inactive'}</span>
+                            </span>
+                          </td>
+
+                          {/* Joined On */}
+                          <td>
+                            <div className={s.rowDateCol}>
+                              <span className={s.rowDate}>{u.joined_date}</span>
+                              <span className={s.rowTime}>{u.joined_time}</span>
+                            </div>
+                          </td>
+
+                          {/* Actions */}
+                          <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                              <button
+                                type="button"
+                                className={s.btnInspectAction}
+                                onClick={() => {
+                                  setSelectedUserId(u.id);
+                                  setIsDetailsDrawerOpen(true);
+                                }}
+                                title="Inspect User Details"
+                              >
+                                <Icon name="visibility" size={14} />
+                                <span>Details</span>
+                              </button>
+                              <button
+                                type="button"
+                                className={s.btnRowAction}
+                                onClick={() => {
+                                  setSelectedUserId(u.id);
+                                  setIsEditUserModalOpen(true);
+                                }}
+                                title="Edit User"
+                              >
+                                <Icon name="edit" size={15} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             {/* Pagination Footer */}
             <div className={s.tableFooter}>
-              <span>Showing 1-10 of 1,248 users</span>
+              <span>
+                Showing {sortedAndFilteredUsers.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-
+                {Math.min(currentPage * pageSize, sortedAndFilteredUsers.length)} of{' '}
+                {sortedAndFilteredUsers.length} users
+              </span>
 
               <div className={s.pageNav}>
-                <button type="button" className={s.pageBtn} disabled>
+                <button
+                  type="button"
+                  className={s.pageBtn}
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  title="Previous Page"
+                >
                   <Icon name="chevron_left" size={16} />
                 </button>
-                <button type="button" className={`${s.pageBtn} ${s.pageBtnActive}`}>
-                  1
-                </button>
-                <button type="button" className={s.pageBtn}>
-                  2
-                </button>
-                <button type="button" className={s.pageBtn}>
-                  3
-                </button>
-                <button type="button" className={s.pageBtn}>
-                  4
-                </button>
-                <button type="button" className={s.pageBtn}>
-                  5
-                </button>
-                <span className={s.pageEllipsis}>...</span>
-                <button type="button" className={s.pageBtn}>
-                  125
-                </button>
-                <button type="button" className={s.pageBtn}>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                  .map((p, idx, arr) => (
+                    <React.Fragment key={p}>
+                      {idx > 0 && p - arr[idx - 1] > 1 && <span className={s.pageEllipsis}>...</span>}
+                      <button
+                        type="button"
+                        className={`${s.pageBtn} ${currentPage === p ? s.pageBtnActive : ''}`}
+                        onClick={() => setCurrentPage(p)}
+                      >
+                        {p}
+                      </button>
+                    </React.Fragment>
+                  ))}
+                <button
+                  type="button"
+                  className={s.pageBtn}
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  title="Next Page"
+                >
                   <Icon name="chevron_right" size={16} />
                 </button>
               </div>
 
-              <select className={s.perPageSelect} defaultValue="10">
+              <select
+                className={s.perPageSelect}
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
                 <option value="10">10 / page</option>
                 <option value="25">25 / page</option>
                 <option value="50">50 / page</option>
               </select>
             </div>
           </div>
+        </div>
 
-          {/* RIGHT COLUMN: SELECTED USER DETAIL INSPECTOR CARD */}
-          <div className={s.inspectorCard}>
-            {!selectedUser ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '380px', padding: '32px', textAlign: 'center', color: '#64748b' }}>
-                <Icon name="person_search" size={44} style={{ color: '#94a3b8', marginBottom: '12px' }} />
-                <h4 style={{ fontSize: '15px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>No User Selected</h4>
-                <p style={{ fontSize: '13px', color: '#64748b' }}>Select a user from the directory to inspect their full profile and manage permissions.</p>
-              </div>
-            ) : (
-              <>
-                {/* Inspector Profile Header */}
-            <div className={s.inspectorHeader}>
-              <div className={s.inspectorProfile}>
-                <div className={s.inspectorAvatarWrap}>
-                  {selectedUser.avatar_url ? (
-                    <img
-                      src={selectedUser.avatar_url}
-                      alt={selectedUser.full_name}
-                      className={s.inspectorAvatarImg}
-                    />
-                  ) : (
-                    <div
-                      className={s.inspectorAvatar}
-                      style={{ background: selectedUser.avatar_bg || '#2563eb' }}
-                    >
-                      {selectedUser.initials}
-                    </div>
-                  )}
-                  {selectedUser.is_active && <span className={s.onlineIndicator} />}
-                </div>
-
-                <div className={s.inspectorNameCol}>
-                  <div className={s.inspectorNameRow}>
-                    <span className={s.inspectorName}>{selectedUser.full_name}</span>
-                    <span
-                      className={`${s.statusPill} ${
-                        selectedUser.is_active ? s.statusActive : s.statusInactive
-                      }`}
-                    >
-                      <span className={s.statusDot} />
-                      <span>{selectedUser.is_active ? 'Active' : 'Inactive'}</span>
-                    </span>
+        {/* ============================================================
+           SLIDE-OVER USER DETAILS DRAWER (OPENS WHEN ACCOUNT IS TAPPED)
+           ============================================================ */}
+        {isDetailsDrawerOpen && selectedUser && (
+          <div className={s.drawerBackdrop} onClick={() => setIsDetailsDrawerOpen(false)}>
+            <div className={s.drawerPanel} onClick={(e) => e.stopPropagation()}>
+              {/* Drawer Top Header Bar */}
+              <div className={s.drawerHeaderBar}>
+                <div className={s.drawerHeaderLeft}>
+                  <div className={s.drawerHeaderIcon}>
+                    <Icon name="badge" size={18} />
                   </div>
-
-                  <div className={s.inspectorEmailRow}>
-                    <Icon name="mail" size={14} style={{ color: '#94a3b8' }} />
-                    <span>{selectedUser.email}</span>
-                  </div>
-
-                  <div className={s.inspectorBadges}>
-                    <span
-                      className={`${s.badgeRole} ${
-                        selectedUser.role === 'SUPER_ADMIN'
-                          ? s.badgeSuperAdmin
-                          : selectedUser.role === 'AUTHORITY'
-                          ? s.badgeAuthority
-                          : s.badgeCitizen
-                      }`}
-                    >
-                      {selectedUser.role === 'SUPER_ADMIN' ? 'SUPER ADMIN' : selectedUser.role}
-                    </span>
-                    <span className={s.badgeUserId}>ID: {selectedUser.id}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className={s.inspectorHeaderActions}>
-                <button
-                  type="button"
-                  className={s.btnEditUser}
-                  onClick={() => setIsEditUserModalOpen(true)}
-                >
-                  <Icon name="edit" size={14} />
-                  <span>Edit User</span>
-                </button>
-                <button
-                  type="button"
-                  className={s.btnMoreOptions}
-                  onClick={() => showToast('User profile options: Export, Audit, Transfer', 'info')}
-                >
-                  <Icon name="more_horiz" size={16} />
-                </button>
-              </div>
-            </div>
-
-            {/* 6 Tabs Bar */}
-            <div className={s.tabsBar}>
-              {(['Overview', 'Permissions', 'Activity', 'Complaints', 'Security', 'Notes'] as const).map(
-                (tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    className={`${s.tabBtn} ${activeInspectorTab === tab ? s.tabBtnActive : ''}`}
-                    onClick={() => setActiveInspectorTab(tab)}
-                  >
-                    {tab}
-                  </button>
-                )
-              )}
-            </div>
-
-            {/* Tab 1: Overview Tab Content */}
-            {activeInspectorTab === 'Overview' && (
-              <>
-                {/* Two Sub-Columns: Personal Info & Access & Permissions */}
-                <div className={s.inspectorTwoCol}>
-                  {/* Left: Personal Information */}
                   <div>
-                    <h4 className={s.sectionHeading}>Personal Information</h4>
-                    <div className={s.infoList}>
-                      <div className={s.infoRow}>
-                        <span className={s.infoLabel}>
-                          <Icon name="person" size={14} />
-                          <span>Full Name</span>
+                    <h3 className={s.drawerHeaderTitle}>User Profile Details</h3>
+                    <div className={s.drawerHeaderSub}>
+                      <span>ID: {selectedUser.id}</span>
+                      <span>•</span>
+                      <span>{selectedUser.role_display}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className={s.drawerCloseBtn}
+                  onClick={() => setIsDetailsDrawerOpen(false)}
+                  title="Close Details (Esc)"
+                >
+                  <Icon name="close" size={18} />
+                </button>
+              </div>
+
+              {/* Drawer Body with all inspector tabs & details */}
+              <div className={s.drawerBody}>
+                {/* Inspector Profile Header */}
+                <div className={s.inspectorHeader}>
+                  <div className={s.inspectorProfile}>
+                    <div className={s.inspectorAvatarWrap}>
+                      {selectedUser.avatar_url ? (
+                        <img
+                          src={selectedUser.avatar_url}
+                          alt={selectedUser.full_name}
+                          className={s.inspectorAvatarImg}
+                        />
+                      ) : (
+                        <div
+                          className={s.inspectorAvatar}
+                          style={{ background: selectedUser.avatar_bg || '#2563eb' }}
+                        >
+                          {selectedUser.initials}
+                        </div>
+                      )}
+                      {selectedUser.is_active && <span className={s.onlineIndicator} />}
+                    </div>
+
+                    <div className={s.inspectorNameCol}>
+                      <div className={s.inspectorNameRow}>
+                        <span className={s.inspectorName}>{selectedUser.full_name}</span>
+                        <span
+                          className={`${s.statusPill} ${
+                            selectedUser.is_active ? s.statusActive : s.statusInactive
+                          }`}
+                        >
+                          <span className={s.statusDot} />
+                          <span>{selectedUser.is_active ? 'Active' : 'Inactive'}</span>
                         </span>
-                        <span className={s.infoValue}>{selectedUser.full_name}</span>
                       </div>
 
-                      <div className={s.infoRow}>
-                        <span className={s.infoLabel}>
-                          <Icon name="mail" size={14} />
-                          <span>Email</span>
-                        </span>
-                        <span className={s.infoValue} style={{ fontSize: 11 }}>
-                          {selectedUser.email}
-                        </span>
+                      <div className={s.inspectorEmailRow}>
+                        <Icon name="mail" size={14} style={{ color: '#94a3b8' }} />
+                        <span>{selectedUser.email}</span>
                       </div>
 
-                      <div className={s.infoRow}>
-                        <span className={s.infoLabel}>
-                          <Icon name="call" size={14} />
-                          <span>Phone</span>
-                        </span>
-                        <span className={s.infoValue}>{selectedUser.phone}</span>
-                      </div>
-
-                      <div className={s.infoRow}>
-                        <span className={s.infoLabel}>
-                          <Icon name="shield" size={14} />
-                          <span>Role</span>
-                        </span>
+                      <div className={s.inspectorBadges}>
                         <span
                           className={`${s.badgeRole} ${
                             selectedUser.role === 'SUPER_ADMIN'
@@ -1027,260 +1129,352 @@ export const UserManagement: React.FC = () => {
                               : s.badgeCitizen
                           }`}
                         >
-                          {selectedUser.role_display}
+                          {selectedUser.role === 'SUPER_ADMIN' ? 'SUPER ADMIN' : selectedUser.role}
                         </span>
-                      </div>
-
-                      <div className={s.infoRow}>
-                        <span className={s.infoLabel}>
-                          <Icon name="radio_button_checked" size={14} />
-                          <span>Status</span>
-                        </span>
-                        <span
-                          className={`${s.statusPill} ${
-                            selectedUser.is_active ? s.statusActive : s.statusInactive
-                          }`}
-                        >
-                          <span className={s.statusDot} />
-                          <span>{selectedUser.is_active ? 'Active' : 'Suspended'}</span>
-                        </span>
-                      </div>
-
-                      <div className={s.infoRow}>
-                        <span className={s.infoLabel}>
-                          <Icon name="calendar_today" size={14} />
-                          <span>Joined On</span>
-                        </span>
-                        <span className={s.infoValue}>{selectedUser.joined_date}, {selectedUser.joined_time.toUpperCase()}</span>
-                      </div>
-
-                      <div className={s.infoRow}>
-                        <span className={s.infoLabel}>
-                          <Icon name="schedule" size={14} />
-                          <span>Last Active</span>
-                        </span>
-                        <span className={s.infoValue}>{selectedUser.last_active}</span>
+                        <span className={s.badgeUserId}>ID: {selectedUser.id}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Right: Access & Permissions */}
-                  <div>
-                    <h4 className={s.sectionHeading}>Access &amp; Permissions</h4>
+                  <div className={s.inspectorHeaderActions}>
+                    <button
+                      type="button"
+                      className={s.btnEditUser}
+                      onClick={() => setIsEditUserModalOpen(true)}
+                    >
+                      <Icon name="edit" size={14} />
+                      <span>Edit User</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={s.btnMoreOptions}
+                      onClick={() => showToast('User profile options: Export, Audit, Transfer', 'info')}
+                    >
+                      <Icon name="more_horiz" size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* 6 Tabs Bar */}
+                <div className={s.tabsBar}>
+                  {(['Overview', 'Permissions', 'Activity', 'Complaints', 'Security', 'Notes'] as const).map(
+                    (tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        className={`${s.tabBtn} ${activeInspectorTab === tab ? s.tabBtnActive : ''}`}
+                        onClick={() => setActiveInspectorTab(tab)}
+                      >
+                        {tab}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                {/* Tab 1: Overview Tab Content */}
+                {activeInspectorTab === 'Overview' && (
+                  <>
+                    <div className={s.inspectorTwoCol}>
+                      {/* Left: Personal Information */}
+                      <div>
+                        <h4 className={s.sectionHeading}>Personal Information</h4>
+                        <div className={s.infoList}>
+                          <div className={s.infoRow}>
+                            <span className={s.infoLabel}>
+                              <Icon name="person" size={14} />
+                              <span>Full Name</span>
+                            </span>
+                            <span className={s.infoValue}>{selectedUser.full_name}</span>
+                          </div>
+
+                          <div className={s.infoRow}>
+                            <span className={s.infoLabel}>
+                              <Icon name="mail" size={14} />
+                              <span>Email</span>
+                            </span>
+                            <span className={s.infoValue} style={{ fontSize: 11 }}>
+                              {selectedUser.email}
+                            </span>
+                          </div>
+
+                          <div className={s.infoRow}>
+                            <span className={s.infoLabel}>
+                              <Icon name="call" size={14} />
+                              <span>Phone</span>
+                            </span>
+                            <span className={s.infoValue}>{selectedUser.phone}</span>
+                          </div>
+
+                          <div className={s.infoRow}>
+                            <span className={s.infoLabel}>
+                              <Icon name="shield" size={14} />
+                              <span>Role</span>
+                            </span>
+                            <span
+                              className={`${s.badgeRole} ${
+                                selectedUser.role === 'SUPER_ADMIN'
+                                  ? s.badgeSuperAdmin
+                                  : selectedUser.role === 'AUTHORITY'
+                                  ? s.badgeAuthority
+                                  : s.badgeCitizen
+                              }`}
+                            >
+                              {selectedUser.role_display}
+                            </span>
+                          </div>
+
+                          <div className={s.infoRow}>
+                            <span className={s.infoLabel}>
+                              <Icon name="radio_button_checked" size={14} />
+                              <span>Status</span>
+                            </span>
+                            <span
+                              className={`${s.statusPill} ${
+                                selectedUser.is_active ? s.statusActive : s.statusInactive
+                              }`}
+                            >
+                              <span className={s.statusDot} />
+                              <span>{selectedUser.is_active ? 'Active' : 'Suspended'}</span>
+                            </span>
+                          </div>
+
+                          <div className={s.infoRow}>
+                            <span className={s.infoLabel}>
+                              <Icon name="calendar_today" size={14} />
+                              <span>Joined On</span>
+                            </span>
+                            <span className={s.infoValue}>
+                              {selectedUser.joined_date}, {selectedUser.joined_time.toUpperCase()}
+                            </span>
+                          </div>
+
+                          <div className={s.infoRow}>
+                            <span className={s.infoLabel}>
+                              <Icon name="schedule" size={14} />
+                              <span>Last Active</span>
+                            </span>
+                            <span className={s.infoValue}>{selectedUser.last_active}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right: Access & Permissions */}
+                      <div>
+                        <h4 className={s.sectionHeading}>Access &amp; Permissions</h4>
+                        <div className={s.permsList}>
+                          {(
+                            selectedUser.permissions || [
+                              'Full system access',
+                              'User management',
+                              'Department management',
+                              'Authority management',
+                              'System configuration',
+                              'Analytics & reports',
+                              'Audit logs',
+                              'Platform settings',
+                            ]
+                          ).map((perm, idx) => (
+                            <div key={idx} className={s.permItem}>
+                              <Icon name="check_circle" size={16} className={s.permIconCheck} />
+                              <span>{perm}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section: Recent Activity */}
+                    <div className={s.activitySection}>
+                      <div className={s.activityHeader}>
+                        <h4 className={s.sectionHeading} style={{ margin: 0 }}>
+                          Recent Activity
+                        </h4>
+                        <button
+                          type="button"
+                          className={s.viewAllLink}
+                          onClick={() => setActiveInspectorTab('Activity')}
+                        >
+                          View All →
+                        </button>
+                      </div>
+
+                      <div className={s.timelineList}>
+                        {(selectedUser.recent_activity || []).map((act, idx) => (
+                          <div key={idx} className={s.timelineItem}>
+                            <div
+                              className={s.timelineDot}
+                              style={{ background: act.dot_bg, color: act.dot_color }}
+                            >
+                              <Icon name={act.icon} size={11} />
+                            </div>
+                            <span className={s.timelineTitle}>{act.title}</span>
+                            <span className={s.timelineTime}>{act.time}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Tab 2: Permissions */}
+                {activeInspectorTab === 'Permissions' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
+                    <h4 className={s.sectionHeading}>Privilege &amp; Security Roles</h4>
                     <div className={s.permsList}>
-                      {(
-                        selectedUser.permissions || [
-                          'Full system access',
-                          'User management',
-                          'Department management',
-                          'Authority management',
-                          'System configuration',
-                          'Analytics & reports',
-                          'Audit logs',
-                          'Platform settings',
-                        ]
-                      ).map((perm, idx) => (
+                      {[
+                        'Full platform root administration',
+                        'Citizen verification and biometric KYC bypass',
+                        'Authority credential provisioning and department reassignment',
+                        'Cryptographic audit trail inspection & tampering detection',
+                        'AI automated triage threshold calibration',
+                        'Automated SMS / WhatsApp citizen notification broadcasts',
+                      ].map((p, idx) => (
                         <div key={idx} className={s.permItem}>
-                          <Icon name="check_circle" size={16} className={s.permIconCheck} />
-                          <span>{perm}</span>
+                          <Icon name="verified" size={16} className={s.permIconCheck} />
+                          <span>{p}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className={s.btnAddUser}
+                      style={{ alignSelf: 'flex-start', marginTop: 8 }}
+                      onClick={() => showToast('Permissions updated and synced across cluster.', 'success')}
+                    >
+                      Save Permission Matrix
+                    </button>
+                  </div>
+                )}
+
+                {/* Tab 3: Activity */}
+                {activeInspectorTab === 'Activity' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
+                    <h4 className={s.sectionHeading}>Audit Trail for {selectedUser.full_name}</h4>
+                    <div className={s.timelineList}>
+                      {(selectedUser.recent_activity || []).map((act, idx) => (
+                        <div key={idx} className={s.timelineItem}>
+                          <div
+                            className={s.timelineDot}
+                            style={{ background: act.dot_bg, color: act.dot_color }}
+                          >
+                            <Icon name={act.icon} size={11} />
+                          </div>
+                          <span className={s.timelineTitle}>{act.title}</span>
+                          <span className={s.timelineTime}>{act.time}</span>
                         </div>
                       ))}
                     </div>
                   </div>
-                </div>
+                )}
 
-                {/* Section: Recent Activity */}
-                <div className={s.activitySection}>
-                  <div className={s.activityHeader}>
-                    <h4 className={s.sectionHeading} style={{ margin: 0 }}>
-                      Recent Activity
-                    </h4>
+                {/* Tab 4: Complaints */}
+                {activeInspectorTab === 'Complaints' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0' }}>
+                    <h4 className={s.sectionHeading}>Associated Civic Grievances</h4>
+                    <div style={{ background: '#f8fafc', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontWeight: 600, fontSize: 13, color: '#0f172a' }}>
+                        #ROA-2026-0892: Pothole on Ward 12 Main Highway
+                      </div>
+                      <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 4 }}>
+                        Status: <span style={{ color: '#059669', fontWeight: 600 }}>Resolved</span> • Priority: High • Assigned: Roads &amp; Infra
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 5: Security */}
+                {activeInspectorTab === 'Security' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
+                    <h4 className={s.sectionHeading}>Account Security &amp; Credentials</h4>
+                    <div className={s.infoRow}>
+                      <span className={s.infoLabel}>Two-Factor Authentication (2FA)</span>
+                      <span className={s.infoValue} style={{ color: '#059669' }}>Enforced (TOTP)</span>
+                    </div>
+                    <div className={s.infoRow}>
+                      <span className={s.infoLabel}>Last Password Rotation</span>
+                      <span className={s.infoValue}>14 days ago</span>
+                    </div>
+                    <div className={s.infoRow}>
+                      <span className={s.infoLabel}>Active Web Sessions</span>
+                      <span className={s.infoValue}>1 active (Bhubaneswar, IN)</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 6: Notes */}
+                {activeInspectorTab === 'Notes' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
+                    <h4 className={s.sectionHeading}>Administrative Remarks</h4>
+                    <textarea
+                      placeholder="Add confidential admin notes regarding this user account..."
+                      style={{
+                        width: '100%',
+                        height: 80,
+                        padding: 10,
+                        borderRadius: 8,
+                        border: '1px solid #e2e8f0',
+                        fontSize: 12.5,
+                        fontFamily: 'inherit',
+                      }}
+                      defaultValue="Executive municipal clearance verified. Verified contact point for central platform configurations."
+                    />
                     <button
                       type="button"
-                      className={s.viewAllLink}
-                      onClick={() => setActiveInspectorTab('Activity')}
+                      className={s.btnAddUser}
+                      style={{ alignSelf: 'flex-start' }}
+                      onClick={() => showToast('Notes saved to user security profile.', 'success')}
                     >
-                      View All →
+                      Save Notes
                     </button>
                   </div>
+                )}
 
-                  <div className={s.timelineList}>
-                    {(selectedUser.recent_activity || []).map((act, idx) => (
-                      <div key={idx} className={s.timelineItem}>
-                        <div
-                          className={s.timelineDot}
-                          style={{ background: act.dot_bg, color: act.dot_color }}
-                        >
-                          <Icon name={act.icon} size={11} />
-                        </div>
-                        <span className={s.timelineTitle}>{act.title}</span>
-                        <span className={s.timelineTime}>{act.time}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+                {/* Bottom Action Buttons Row */}
+                <div className={s.actionButtonsRow}>
+                  <button
+                    type="button"
+                    className={s.btnAction}
+                    onClick={handleChangeRole}
+                    title="Change User Role Tier"
+                  >
+                    <Icon name="swap_horiz" size={15} style={{ color: '#2563eb' }} />
+                    <span>Change Role</span>
+                  </button>
 
-            {/* Tab 2: Permissions */}
-            {activeInspectorTab === 'Permissions' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
-                <h4 className={s.sectionHeading}>Privilege &amp; Security Roles</h4>
-                <div className={s.permsList}>
-                  {[
-                    'Full platform root administration',
-                    'Citizen verification and biometric KYC bypass',
-                    'Authority credential provisioning and department reassignment',
-                    'Cryptographic audit trail inspection & tampering detection',
-                    'AI automated triage threshold calibration',
-                    'Automated SMS / WhatsApp citizen notification broadcasts',
-                  ].map((p, idx) => (
-                    <div key={idx} className={s.permItem}>
-                      <Icon name="verified" size={16} className={s.permIconCheck} />
-                      <span>{p}</span>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  className={s.btnAddUser}
-                  style={{ alignSelf: 'flex-start', marginTop: 8 }}
-                  onClick={() => showToast('Permissions updated and synced across cluster.', 'success')}
-                >
-                  Save Permission Matrix
-                </button>
-              </div>
-            )}
+                  <button
+                    type="button"
+                    className={s.btnAction}
+                    onClick={handleResetPassword}
+                    title="Dispatch Password Reset"
+                  >
+                    <Icon name="lock_reset" size={15} style={{ color: '#0284c7' }} />
+                    <span>Reset Password</span>
+                  </button>
 
-            {/* Tab 3: Activity */}
-            {activeInspectorTab === 'Activity' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
-                <h4 className={s.sectionHeading}>Audit Trail for {selectedUser.full_name}</h4>
-                <div className={s.timelineList}>
-                  {(selectedUser.recent_activity || []).map((act, idx) => (
-                    <div key={idx} className={s.timelineItem}>
-                      <div
-                        className={s.timelineDot}
-                        style={{ background: act.dot_bg, color: act.dot_color }}
-                      >
-                        <Icon name={act.icon} size={11} />
-                      </div>
-                      <span className={s.timelineTitle}>{act.title}</span>
-                      <span className={s.timelineTime}>{act.time}</span>
-                    </div>
-                  ))}
+                  <button
+                    type="button"
+                    className={s.btnAction}
+                    onClick={() => setIsAuditLogsModalOpen(true)}
+                    title="Inspect Security Audit Events"
+                  >
+                    <Icon name="receipt_long" size={15} style={{ color: '#7c3aed' }} />
+                    <span>View Audit Logs</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`${s.btnAction} ${s.btnSuspend}`}
+                    onClick={handleToggleSuspend}
+                    title="Suspend or Reactivate Account"
+                  >
+                    <Icon name="warning" size={15} />
+                    <span>{selectedUser.is_active ? 'Suspend User' : 'Reactivate User'}</span>
+                  </button>
                 </div>
               </div>
-            )}
-
-            {/* Tab 4: Complaints */}
-            {activeInspectorTab === 'Complaints' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0' }}>
-                <h4 className={s.sectionHeading}>Associated Civic Grievances</h4>
-                <div style={{ background: '#f8fafc', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontWeight: 600, fontSize: 13, color: '#0f172a' }}>
-                    #ROA-2026-0892: Pothole on Ward 12 Main Highway
-                  </div>
-                  <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 4 }}>
-                    Status: <span style={{ color: '#059669', fontWeight: 600 }}>Resolved</span> • Priority: High • Assigned: Roads &amp; Infra
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 5: Security */}
-            {activeInspectorTab === 'Security' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
-                <h4 className={s.sectionHeading}>Account Security &amp; Credentials</h4>
-                <div className={s.infoRow}>
-                  <span className={s.infoLabel}>Two-Factor Authentication (2FA)</span>
-                  <span className={s.infoValue} style={{ color: '#059669' }}>Enforced (TOTP)</span>
-                </div>
-                <div className={s.infoRow}>
-                  <span className={s.infoLabel}>Last Password Rotation</span>
-                  <span className={s.infoValue}>14 days ago</span>
-                </div>
-                <div className={s.infoRow}>
-                  <span className={s.infoLabel}>Active Web Sessions</span>
-                  <span className={s.infoValue}>1 active (Bhubaneswar, IN)</span>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 6: Notes */}
-            {activeInspectorTab === 'Notes' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
-                <h4 className={s.sectionHeading}>Administrative Remarks</h4>
-                <textarea
-                  placeholder="Add confidential admin notes regarding this user account..."
-                  style={{
-                    width: '100%',
-                    height: 80,
-                    padding: 10,
-                    borderRadius: 8,
-                    border: '1px solid #e2e8f0',
-                    fontSize: 12.5,
-                    fontFamily: 'inherit',
-                  }}
-                  defaultValue="Executive municipal clearance verified. Verified contact point for central platform configurations."
-                />
-                <button
-                  type="button"
-                  className={s.btnAddUser}
-                  style={{ alignSelf: 'flex-start' }}
-                  onClick={() => showToast('Notes saved to user security profile.', 'success')}
-                >
-                  Save Notes
-                </button>
-              </div>
-            )}
-
-            {/* Bottom Action Buttons Row */}
-            <div className={s.actionButtonsRow}>
-              <button
-                type="button"
-                className={s.btnAction}
-                onClick={handleChangeRole}
-                title="Change User Role Tier"
-              >
-                <Icon name="swap_horiz" size={15} style={{ color: '#2563eb' }} />
-                <span>Change Role</span>
-              </button>
-
-              <button
-                type="button"
-                className={s.btnAction}
-                onClick={handleResetPassword}
-                title="Dispatch Password Reset"
-              >
-                <Icon name="lock_reset" size={15} style={{ color: '#0284c7' }} />
-                <span>Reset Password</span>
-              </button>
-
-              <button
-                type="button"
-                className={s.btnAction}
-                onClick={() => setIsAuditLogsModalOpen(true)}
-                title="Inspect Security Audit Events"
-              >
-                <Icon name="receipt_long" size={15} style={{ color: '#7c3aed' }} />
-                <span>View Audit Logs</span>
-              </button>
-
-              <button
-                type="button"
-                className={`${s.btnAction} ${s.btnSuspend}`}
-                onClick={handleToggleSuspend}
-                title="Suspend or Reactivate Account"
-              >
-                <Icon name="warning" size={15} />
-                <span>{selectedUser.is_active ? 'Suspend User' : 'Reactivate User'}</span>
-              </button>
             </div>
-            </>
-          )}
           </div>
-        </div>
+        )}
       </main>
 
       {/* ============================================================

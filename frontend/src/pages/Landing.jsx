@@ -122,7 +122,12 @@ export default function Landing() {
         <header className={s.navbar}>
           <Link to="/" className={s.navLeft}>
             <div className={s.brandLogoWrap}>
-              <img src="/logo-mark.png" alt="CivicSetu Logo" className={s.brandLogoImg} />
+              <img
+                src="/civicsetu-logo.png"
+                onError={(e) => { e.currentTarget.src = '/static/civicsetu-logo.png'; }}
+                alt="CivicSetu Logo"
+                className={s.brandLogoImg}
+              />
             </div>
             <span className={s.brandName}>CivicSetu</span>
           </Link>
@@ -133,6 +138,10 @@ export default function Landing() {
             <button type="button" className={s.navLink} onClick={() => scrollToSection('platform')}>Platform</button>
             <button type="button" className={s.navLink} onClick={() => scrollToSection('workflow')}>How It Works</button>
             <button type="button" className={s.navLink} onClick={() => scrollToSection('integrity')}>Integrity</button>
+            <Link to="/map" className={s.navLink} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#16A34A', fontWeight: 600, textDecoration: 'none' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 6px rgba(34, 197, 94, 0.6)' }} />
+              Live Map
+            </Link>
           </nav>
 
           <div className={s.navRight}>
@@ -169,7 +178,12 @@ export default function Landing() {
           <div className={s.mobileNavPanel}>
             <div className={s.mobileNavBrand}>
               <div className={s.brandLogoWrap}>
-                <img src="/logo-mark.png" alt="CivicSetu Logo" className={s.brandLogoImg} />
+                <img
+                  src="/civicsetu-logo.png"
+                  onError={(e) => { e.currentTarget.src = '/static/civicsetu-logo.png'; }}
+                  alt="CivicSetu Logo"
+                  className={s.brandLogoImg}
+                />
               </div>
               <span className={s.brandName}>CivicSetu</span>
             </div>
@@ -178,6 +192,15 @@ export default function Landing() {
             <button type="button" className={s.navLink} onClick={() => scrollToSection('platform')}>Platform</button>
             <button type="button" className={s.navLink} onClick={() => scrollToSection('workflow')}>How It Works</button>
             <button type="button" className={s.navLink} onClick={() => scrollToSection('integrity')}>Integrity</button>
+            <Link
+              to="/map"
+              className={s.navLink}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#16A34A', fontWeight: 600, textDecoration: 'none' }}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E' }} />
+              Live City Map
+            </Link>
             <button type="button" className={s.navBtnGhost} style={{ textAlign: 'center' }} onClick={() => { setMobileMenuOpen(false); setRoleModalMode('login'); setRoleModalOpen(true); }}>Login</button>
             <button type="button" className={s.navBtnPrimary} style={{ justifyContent: 'center' }} onClick={() => { setMobileMenuOpen(false); setRoleModalMode('signup'); setRoleModalOpen(true); }}>Sign Up</button>
           </div>
@@ -225,6 +248,7 @@ export default function Landing() {
                 <div className={s.incidentImageWrap}>
                   <img
                     src="/civic-hero-city.jpg"
+                    onError={(e) => { e.currentTarget.src = '/static/civic-hero-city.jpg'; }}
                     alt="Ward 12 Municipal Infrastructure"
                     className={s.incidentImage}
                   />
@@ -232,8 +256,8 @@ export default function Landing() {
                 <div className={s.incidentMeta}>
                   <h3 className={s.incidentTitle}>2026 Ward 12 Infrastructure</h3>
                   <span className={s.incidentSubtitle}>GEO-28.6139N / 77.2090E</span>
-                  <Link to="/track" className={s.incidentLink}>
-                    View Incident Details
+                  <Link to="/map" className={s.incidentLink}>
+                    Explore Incident Map
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
@@ -398,41 +422,46 @@ export default function Landing() {
               <div>
                 <div className={s.sidebarBrand}>
                   <div className={s.sidebarBrandLogoWrap}>
-                    <img src="/logo-mark.png" alt="CivicSetu Logo" className={s.brandLogoImg} />
+                    <img
+                      src="/civicsetu-logo.png"
+                      onError={(e) => { e.currentTarget.src = '/static/civicsetu-logo.png'; }}
+                      alt="CivicSetu Logo"
+                      className={s.brandLogoImg}
+                    />
                   </div>
                   <span className={s.sidebarBrandText}>CivicSetu</span>
                 </div>
 
                 <div className={s.sidebarNav}>
-                  <div className={s.sidebarItem}>
+                  <div className={s.sidebarItem} onClick={() => navigate('/citizen/dashboard')} style={{ cursor: 'pointer' }} title="Citizen Dashboard">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
                     Dashboard
                   </div>
-                  <div className={`${s.sidebarItem} ${s.sidebarItemActive}`}>
+                  <div className={`${s.sidebarItem} ${s.sidebarItemActive}`} onClick={() => navigate('/citizen/complaints')} style={{ cursor: 'pointer' }} title="View Grievance Queue">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
                     Grievances
                     <span className={s.sidebarItemCount}>24</span>
                   </div>
-                  <div className={s.sidebarItem} onClick={() => navigate('/map')}>
+                  <div className={s.sidebarItem} onClick={() => navigate('/map')} style={{ cursor: 'pointer' }} title="Open Live Incident Map">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></svg>
                     Live City Map
                   </div>
-                  <div className={s.sidebarItem}>
+                  <div className={s.sidebarItem} onClick={() => navigate('/authority/dashboard')} style={{ cursor: 'pointer' }} title="Department Portal">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                     Departments
                   </div>
-                  <div className={s.sidebarItem}>
+                  <div className={s.sidebarItem} onClick={() => navigate('/superadmin/analytics')} style={{ cursor: 'pointer' }} title="System Analytics">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
                     Analytics
                   </div>
                 </div>
               </div>
 
-              <div className={s.sidebarUser}>
+              <div className={s.sidebarUser} onClick={() => navigate('/login/authority')} style={{ cursor: 'pointer' }} title="Authority Login">
                 <div className={s.sidebarAvatar}>RM</div>
                 <div className={s.sidebarUserInfo}>
                   <span className={s.sidebarUserName}>Rajesh M.</span>
-                  <span className={s.sidebarUserRole}>Ward 12 Officer</span>
+                  <span className={s.sidebarUserRole}>Ward 12 Officer ↗</span>
                 </div>
               </div>
             </div>
@@ -755,13 +784,23 @@ export default function Landing() {
                 Report a civic problem in under 60 seconds or track an ongoing complaint with your unique code.
               </p>
 
-              <div className={s.ctaTabletCard}>
+              <div
+                className={s.ctaTabletCard}
+                onClick={() => navigate('/citizen/submit')}
+                style={{ cursor: 'pointer' }}
+                title="Open Citizen Grievance Portal"
+              >
                 <div className={s.ctaTabletLogoWrap}>
-                  <img src="/logo-mark.png" alt="CivicSetu App" className={s.brandLogoImg} />
+                  <img
+                    src="/civicsetu-logo.png"
+                    onError={(e) => { e.currentTarget.src = '/static/civicsetu-logo.png'; }}
+                    alt="CivicSetu App"
+                    className={s.brandLogoImg}
+                  />
                 </div>
                 <div className={s.ctaTabletInfo}>
                   <span className={s.ctaTabletTitle}>CivicSetu Citizen Portal</span>
-                  <span className={s.ctaTabletDesc}>Instant mobile-friendly reporting without downloading any app</span>
+                  <span className={s.ctaTabletDesc}>Instant mobile-friendly reporting without downloading any app ↗</span>
                 </div>
               </div>
 
@@ -787,7 +826,12 @@ export default function Landing() {
           <div className={s.footerTopRow}>
             <div className={s.footerBrandLeft}>
               <div className={s.footerLogoWrap}>
-                <img src="/logo-mark.png" alt="CivicSetu Logo" className={s.brandLogoImg} />
+                <img
+                  src="/civicsetu-logo.png"
+                  onError={(e) => { e.currentTarget.src = '/static/civicsetu-logo.png'; }}
+                  alt="CivicSetu Logo"
+                  className={s.brandLogoImg}
+                />
               </div>
               <span className={s.footerCopyright}>© 2026 CivicSetu. Built for sustainable Indian communities.</span>
             </div>
@@ -797,7 +841,7 @@ export default function Landing() {
               <button type="button" className={s.footerLink} onClick={() => scrollToSection('workflow')}>How It Works</button>
               <Link to="/citizen/submit" className={s.footerLink}>Report Grievance</Link>
               <Link to="/track" className={s.footerLink}>Track Complaint</Link>
-              <Link to="/map" className={s.footerLink}>City Heatmap</Link>
+              <Link to="/map" className={s.footerLink}>Live City Map</Link>
               <Link to="/login/authority" className={s.footerLink}>Municipal Login</Link>
               <button
                 type="button"
@@ -810,9 +854,19 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className={s.giantWordmarkRow}>
+          <div
+            className={s.giantWordmarkRow}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            style={{ cursor: 'pointer' }}
+            title="Scroll to top"
+          >
             <div className={s.giantLogoBridge}>
-              <img src="/logo-mark.png" alt="CivicSetu Original Logo" className={s.giantLogoImg} />
+              <img
+                src="/civicsetu-logo.png"
+                onError={(e) => { e.currentTarget.src = '/static/civicsetu-logo.png'; }}
+                alt="CivicSetu Official Logo"
+                className={s.giantLogoImg}
+              />
             </div>
             <h1 className={s.giantWordmarkText}>CivicSetu</h1>
           </div>

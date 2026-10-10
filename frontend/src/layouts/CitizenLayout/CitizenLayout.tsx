@@ -50,12 +50,13 @@ export const CitizenLayout: React.FC = () => {
         { label: 'Report Grievance', path: '/citizen/submit', icon: 'add_circle', isHighlight: true },
         { label: 'My Grievances', path: '/citizen/complaints', icon: 'assignment' },
         { label: 'Track Complaint', path: '/citizen/tracking', icon: 'search' },
+        { label: 'City Radar Map', path: '/map', icon: 'explore' },
         { label: 'Profile', path: '/citizen/profile', icon: 'person' },
       ]
     : [
         { label: 'Report Grievance', path: '/citizen/submit', icon: 'add_circle', isHighlight: true },
         { label: 'Track Grievance', path: '/citizen/tracking', icon: 'search' },
-        { label: 'Public Map', path: '/map', icon: 'explore' },
+        { label: 'City Radar Map', path: '/map', icon: 'explore' },
       ];
 
   const handleLogout = async () => {

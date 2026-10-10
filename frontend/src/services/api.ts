@@ -41,8 +41,12 @@ api.interceptors.response.use(
     // Extract readable error message from response data if available
     if (error.response?.data) {
       const d = error.response.data;
-      if (typeof d === 'string' && d.length < 250) {
-        error.message = d;
+      if (typeof d === 'string') {
+        if (!d.includes('<html') && !d.includes('<!DOCTYPE') && d.length < 250) {
+          error.message = d;
+        } else {
+          error.message = 'A server error occurred while processing your request. Please try again.';
+        }
       } else if (d.detail && typeof d.detail === 'string') {
         error.message = d.detail;
       } else if (d.message && typeof d.message === 'string') {

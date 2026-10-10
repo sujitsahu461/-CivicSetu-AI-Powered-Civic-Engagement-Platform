@@ -15,6 +15,7 @@ import {
   INDIA_DEFAULT_ADDRESS,
   MAP_TILE_LAYERS,
   LocationPreset,
+  TileLayerKey,
   smartDetectGps,
   resolveAddressToCoords,
   reverseGeocodeCoords,
@@ -53,36 +54,33 @@ const MapEvents: React.FC<{
 };
 
 // Smooth recenter and auto-size invalidator helper
-const MapLifecycle: React.FC<{ position: [number, number]; zoom?: number }> = ({
-  position,
-  zoom,
-}) => {
+const MapController: React.FC<{
+  flyTarget: { center: [number, number]; zoom: number; key: number } | null;
+}> = ({ flyTarget }) => {
   const map = useMap();
 
   useEffect(() => {
     // Invalidate size immediately, and at multiple intervals as layout settles
     map.invalidateSize();
-    const t1 = setTimeout(() => map.invalidateSize(), 50);
-    const t2 = setTimeout(() => map.invalidateSize(), 150);
-    const t3 = setTimeout(() => map.invalidateSize(), 400);
-    const t4 = setTimeout(() => map.invalidateSize(), 800);
+    const timers = [50, 150, 400, 800].map((delay) =>
+      setTimeout(() => map.invalidateSize(), delay)
+    );
 
     const onResize = () => map.invalidateSize();
     window.addEventListener('resize', onResize);
 
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
+      timers.forEach(clearTimeout);
       window.removeEventListener('resize', onResize);
     };
   }, [map]);
 
   useEffect(() => {
-    map.flyTo(position, zoom ?? map.getZoom(), { duration: 0.8 });
-    setTimeout(() => map.invalidateSize(), 60);
-  }, [position, zoom, map]);
+    if (flyTarget) {
+      map.flyTo(flyTarget.center, flyTarget.zoom, { duration: 1.0 });
+      setTimeout(() => map.invalidateSize(), 80);
+    }
+  }, [flyTarget, map]);
 
   return null;
 };
@@ -113,7 +111,12 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     return hasValidInitial ? '' : INDIA_DEFAULT_ADDRESS;
   });
 
-  const [activeTileLayer, setActiveTileLayer] = useState<'osm' | 'esri' | 'voyager'>('osm');
+  const [activeTileLayer, setActiveTileLayer] = useState<TileLayerKey>('osm');
+  const [flyTarget, setFlyTarget] = useState<{
+    center: [number, number];
+    zoom: number;
+    key: number;
+  } | null>(null);
 
   const [isGeocoding, setIsGeocoding] = useState<boolean>(false);
   const [isLocating, setIsLocating] = useState<boolean>(false);
@@ -170,15 +173,15 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       const cleanLng = roundCoord(Number(initialLng));
       setPosition([cleanLat, cleanLng]);
       setMapZoom(15);
+      setFlyTarget({ center: [cleanLat, cleanLng], zoom: 15, key: Date.now() });
       reverseGeocode(cleanLat, cleanLng);
     } else {
       // Default to Whole India map view
       setPosition(INDIA_MAP_CENTER);
       setMapZoom(INDIA_DEFAULT_ZOOM);
       setAddressPreview(INDIA_DEFAULT_ADDRESS);
-      onLocationSelect(INDIA_MAP_CENTER[0], INDIA_MAP_CENTER[1], INDIA_DEFAULT_ADDRESS);
     }
-  }, [initialLat, initialLng, onLocationSelect, reverseGeocode]);
+  }, [initialLat, initialLng, reverseGeocode]);
 
   // Sync when parent changes coordinates explicitly (e.g. typing lat/lng inputs)
   useEffect(() => {
@@ -192,6 +195,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       const pLng = roundCoord(Number(initialLng));
       if (Math.abs(position[0] - pLat) > 0.00001 || Math.abs(position[1] - pLng) > 0.00001) {
         setPosition([pLat, pLng]);
+        setFlyTarget({ center: [pLat, pLng], zoom: 15, key: Date.now() });
       }
     }
   }, [initialLat, initialLng]);
@@ -221,10 +225,12 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const handleLocateMyWard = async () => {
     setIsLocating(true);
     const resolved = await resolveAddressToCoords(user?.address || 'Modipara, Sambalpur');
+    const targetZoom = resolved.zoom || 16;
     setPosition([resolved.lat, resolved.lng]);
-    setMapZoom(resolved.zoom || 16);
+    setMapZoom(targetZoom);
     setSelectedPreset(resolved.name);
     setAddressPreview(resolved.address);
+    setFlyTarget({ center: [resolved.lat, resolved.lng], zoom: targetZoom, key: Date.now() });
     onLocationSelect(resolved.lat, resolved.lng, resolved.address);
     setIsLocating(false);
   };
@@ -234,10 +240,12 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     setIsLocating(true);
     try {
       const res = await smartDetectGps(user?.address);
+      const targetZoom = res.zoom || 16;
       setPosition([res.lat, res.lng]);
-      setMapZoom(res.zoom || 16);
+      setMapZoom(targetZoom);
       setSelectedPreset(null);
       setAddressPreview(res.address);
+      setFlyTarget({ center: [res.lat, res.lng], zoom: targetZoom, key: Date.now() });
       onLocationSelect(res.lat, res.lng, res.address);
     } catch {
       await handleLocateMyWard();
@@ -252,6 +260,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     setPosition(INDIA_MAP_CENTER);
     setMapZoom(INDIA_DEFAULT_ZOOM);
     setAddressPreview('Republic of India');
+    setFlyTarget({ center: INDIA_MAP_CENTER, zoom: INDIA_DEFAULT_ZOOM, key: Date.now() });
     onLocationSelect(INDIA_MAP_CENTER[0], INDIA_MAP_CENTER[1], 'Republic of India');
   };
 
@@ -269,10 +278,12 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     );
 
     if (matchedPreset) {
+      const targetZoom = matchedPreset.zoom || 15;
       setPosition([matchedPreset.lat, matchedPreset.lng]);
-      setMapZoom(matchedPreset.zoom || 15);
+      setMapZoom(targetZoom);
       setSelectedPreset(matchedPreset.name);
       setAddressPreview(matchedPreset.address);
+      setFlyTarget({ center: [matchedPreset.lat, matchedPreset.lng], zoom: targetZoom, key: Date.now() });
       onLocationSelect(matchedPreset.lat, matchedPreset.lng, matchedPreset.address);
       return;
     }
@@ -295,6 +306,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           setMapZoom(16);
           setSelectedPreset(null);
           setAddressPreview(addr);
+          setFlyTarget({ center: [lat, lng], zoom: 16, key: Date.now() });
           onLocationSelect(lat, lng, addr);
           return;
         }
@@ -315,6 +327,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           setMapZoom(16);
           setSelectedPreset(null);
           setAddressPreview(addr);
+          setFlyTarget({ center: [lat, lng], zoom: 16, key: Date.now() });
           onLocationSelect(lat, lng, addr);
           return;
         }
@@ -331,8 +344,10 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const handleSelectPreset = (preset: LocationPreset) => {
     setSelectedPreset(preset.name);
     setPosition([preset.lat, preset.lng]);
-    setMapZoom(preset.zoom || 14);
+    const targetZoom = preset.zoom || 14;
+    setMapZoom(targetZoom);
     setAddressPreview(preset.address);
+    setFlyTarget({ center: [preset.lat, preset.lng], zoom: targetZoom, key: Date.now() });
     onLocationSelect(preset.lat, preset.lng, preset.address);
   };
 
@@ -376,7 +391,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             className={s.layerToggleBtn}
             onClick={() =>
               setActiveTileLayer((prev) =>
-                prev === 'osm' ? 'esri' : prev === 'esri' ? 'voyager' : 'osm'
+                prev === 'osm' ? 'esri' : prev === 'esri' ? 'satellite' : 'osm'
               )
             }
             title="Switch Map Tile Provider"
@@ -384,10 +399,10 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             <Icon name="layers" size={14} />
             <span>
               {activeTileLayer === 'osm'
-                ? 'OSM Standard'
+                ? 'OSM Standard HD'
                 : activeTileLayer === 'esri'
-                ? 'Esri Map'
-                : 'Voyager HD'}
+                ? 'Esri Street Map'
+                : 'Satellite View'}
             </span>
           </button>
 
@@ -477,10 +492,10 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             attribution={currentTileConfig.attribution}
             url={currentTileConfig.url}
             maxZoom={currentTileConfig.maxZoom}
-            subdomains={(currentTileConfig as any).subdomains || 'abc'}
+            subdomains={currentTileConfig.subdomains || 'abc'}
           />
 
-          <MapLifecycle position={position} zoom={mapZoom} />
+          <MapController flyTarget={flyTarget} />
 
           <MapEvents onMapClick={handlePositionChange} />
 

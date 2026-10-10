@@ -7,7 +7,13 @@ import Badge from '../../components/ui/Badge';
 import Icon from '../../components/ui/Icon';
 import { showToast } from '../../components/ui/Toast';
 import useAuthStore from '../../store/authStore';
-import { smartDetectGps, MAP_TILE_LAYERS } from '../../config/mapConfig';
+import {
+  smartDetectGps,
+  MAP_TILE_LAYERS,
+  INDIA_MAP_CENTER,
+  INDIA_DEFAULT_ZOOM,
+  TileLayerKey,
+} from '../../config/mapConfig';
 import { formatDate, truncateText } from '../../utils/formatters';
 import s from './IncidentMap.module.css';
 
@@ -96,11 +102,11 @@ const createCustomMarkerIcon = (category: string, priority: string, status: stri
   });
 };
 
-// Recenter component
-const MapRecenter: React.FC<{ center: [number, number]; zoom?: number }> = ({ center, zoom }) => {
+// Recenter and zoom flight component
+const MapRecenter: React.FC<{ center: [number, number]; zoom: number }> = ({ center, zoom }) => {
   const map = useMap();
   useEffect(() => {
-    map.flyTo(center, zoom || map.getZoom(), { duration: 1.2 });
+    map.flyTo(center, zoom, { duration: 1.0 });
   }, [center, zoom, map]);
   return null;
 };
@@ -126,10 +132,10 @@ const FitBoundsToMarkers: React.FC<{
     if (valid.length > 0 && !hasFittedRef.current) {
       const latLngs = valid.map((c) => [Number(c.latitude), Number(c.longitude)] as [number, number]);
       if (latLngs.length === 1) {
-        map.flyTo(latLngs[0], 15, { duration: 1.0 });
+        map.flyTo(latLngs[0], 14, { duration: 1.0 });
       } else {
         const bounds = L.latLngBounds(latLngs);
-        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
       }
       hasFittedRef.current = true;
     }
@@ -152,7 +158,7 @@ const FlyToSelected: React.FC<{ selectedComplaint?: Complaint | null }> = ({ sel
       map.flyTo(
         [Number(selectedComplaint.latitude), Number(selectedComplaint.longitude)],
         16,
-        { duration: 1.2 }
+        { duration: 1.0 }
       );
     }
   }, [selectedComplaint, map]);
@@ -164,7 +170,7 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
   selectedComplaintId,
   onSelectComplaint,
   center,
-  zoom = 13,
+  zoom,
   height = '500px',
   interactive = true,
 }) => {
@@ -181,7 +187,7 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
     [complaints]
   );
 
-  // Calculate intelligent centroid of complaints or default to active cluster
+  // Calculate intelligent centroid of complaints or default to India map center
   const defaultCenter = useMemo<[number, number]>(() => {
     if (center) return center;
     if (geocodedComplaints.length > 0) {
@@ -189,14 +195,24 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
       const sumLng = geocodedComplaints.reduce((acc, c) => acc + Number(c.longitude), 0);
       return [sumLat / geocodedComplaints.length, sumLng / geocodedComplaints.length];
     }
-    // Default active cluster (Gunupur / Odisha region)
-    return [19.047644, 83.834461];
+    // Default to whole India geographic center
+    return INDIA_MAP_CENTER;
   }, [center, geocodedComplaints]);
+
+  const defaultZoom = useMemo<number>(() => {
+    if (zoom) return zoom;
+    if (geocodedComplaints.length > 0) return 13;
+    return INDIA_DEFAULT_ZOOM;
+  }, [zoom, geocodedComplaints]);
 
   const { user } = useAuthStore();
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultCenter);
+  const [mapZoom, setMapZoom] = useState<number>(defaultZoom);
+  const [activeCluster, setActiveCluster] = useState<string>(
+    geocodedComplaints.length > 0 ? 'incidents' : 'india'
+  );
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [activeTileLayer, setActiveTileLayer] = useState<'osm' | 'esri' | 'voyager'>('osm');
+  const [activeTileLayer, setActiveTileLayer] = useState<TileLayerKey>('osm');
 
   const currentTileConfig = MAP_TILE_LAYERS[activeTileLayer];
 
@@ -213,8 +229,9 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
   useEffect(() => {
     if (!selectedComplaintId) {
       setMapCenter(defaultCenter);
+      setMapZoom(defaultZoom);
     }
-  }, [defaultCenter, selectedComplaintId]);
+  }, [defaultCenter, defaultZoom, selectedComplaintId]);
 
   const locateUser = async () => {
     try {
@@ -222,13 +239,18 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
       const loc: [number, number] = [res.lat, res.lng];
       setUserLocation(loc);
       setMapCenter(loc);
+      setMapZoom(res.zoom || 15);
+      setActiveCluster('user_gps');
+      showToast(res.message, 'success');
     } catch {
       showToast('Could not access current location.', 'warning');
     }
   };
 
-  const jumpToCluster = (lat: number, lng: number) => {
+  const jumpToCluster = (clusterKey: string, lat: number, lng: number, targetZoom: number) => {
+    setActiveCluster(clusterKey);
     setMapCenter([lat, lng]);
+    setMapZoom(targetZoom);
   };
 
   const getStatusVariant = (status: string) => {
@@ -255,43 +277,51 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
         <div className={s.clusterNav}>
           <button
             type="button"
-            className={s.clusterBtn}
-            onClick={() => jumpToCluster(20.5937, 78.9629)}
-            title="Whole India View"
+            className={`${s.clusterBtn} ${activeCluster === 'india' ? s.clusterBtnActive : ''}`}
+            onClick={() => jumpToCluster('india', INDIA_MAP_CENTER[0], INDIA_MAP_CENTER[1], INDIA_DEFAULT_ZOOM)}
+            title="Whole India Country View"
           >
             🇮🇳 India
           </button>
           <button
             type="button"
-            className={s.clusterBtn}
-            onClick={() => jumpToCluster(21.4669, 83.9812)}
-            title="Jump to Sambalpur Incidents"
+            className={`${s.clusterBtn} ${activeCluster === 'sambalpur' ? s.clusterBtnActive : ''}`}
+            onClick={() => jumpToCluster('sambalpur', 21.4669, 83.9812, 14)}
+            title="Sambalpur Municipal Corporation"
           >
             Sambalpur
           </button>
           <button
             type="button"
-            className={s.clusterBtn}
-            onClick={() => jumpToCluster(19.047644, 83.834461)}
-            title="Jump to Gunupur Incidents"
-          >
-            Gunupur
-          </button>
-          <button
-            type="button"
-            className={s.clusterBtn}
-            onClick={() => jumpToCluster(20.296059, 85.82454)}
-            title="Jump to Bhubaneswar Incidents"
+            className={`${s.clusterBtn} ${activeCluster === 'bhubaneswar' ? s.clusterBtnActive : ''}`}
+            onClick={() => jumpToCluster('bhubaneswar', 20.296059, 85.82454, 13)}
+            title="Bhubaneswar Municipal Corporation"
           >
             Bhubaneswar
           </button>
           <button
             type="button"
-            className={s.clusterBtn}
-            onClick={() => jumpToCluster(19.1717, 83.4163)}
-            title="Jump to Rayagada Incidents"
+            className={`${s.clusterBtn} ${activeCluster === 'delhi' ? s.clusterBtnActive : ''}`}
+            onClick={() => jumpToCluster('delhi', 28.6139, 77.209, 12)}
+            title="New Delhi Municipal Council"
           >
-            Rayagada
+            New Delhi
+          </button>
+          <button
+            type="button"
+            className={`${s.clusterBtn} ${activeCluster === 'mumbai' ? s.clusterBtnActive : ''}`}
+            onClick={() => jumpToCluster('mumbai', 19.076, 72.8777, 12)}
+            title="Brihanmumbai Municipal Corporation"
+          >
+            Mumbai
+          </button>
+          <button
+            type="button"
+            className={`${s.clusterBtn} ${activeCluster === 'gunupur' ? s.clusterBtnActive : ''}`}
+            onClick={() => jumpToCluster('gunupur', 19.047644, 83.834461, 15)}
+            title="GIET University / Gunupur Ward"
+          >
+            Gunupur
           </button>
         </div>
 
@@ -300,7 +330,7 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
           className={s.layerBtn}
           onClick={() =>
             setActiveTileLayer((prev) =>
-              prev === 'osm' ? 'esri' : prev === 'esri' ? 'voyager' : 'osm'
+              prev === 'osm' ? 'esri' : prev === 'esri' ? 'satellite' : 'osm'
             )
           }
           title="Switch Map Tile Provider"
@@ -308,10 +338,10 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
           <Icon name="layers" size={14} />
           <span>
             {activeTileLayer === 'osm'
-              ? 'OSM Standard'
+              ? 'OSM Standard HD'
               : activeTileLayer === 'esri'
-              ? 'Esri Map'
-              : 'Voyager HD'}
+              ? 'Esri Street Map'
+              : 'Satellite View'}
           </span>
         </button>
 
@@ -335,7 +365,7 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
 
       <MapContainer
         center={mapCenter}
-        zoom={zoom}
+        zoom={mapZoom}
         scrollWheelZoom={interactive}
         dragging={interactive}
         className={s.leafletContainer}
@@ -345,11 +375,11 @@ export const IncidentMap: React.FC<IncidentMapProps> = ({
           attribution={currentTileConfig.attribution}
           url={currentTileConfig.url}
           maxZoom={currentTileConfig.maxZoom}
-          subdomains={(currentTileConfig as any).subdomains || 'abc'}
+          subdomains={currentTileConfig.subdomains || 'abc'}
         />
 
         <AutoInvalidateSize />
-        <MapRecenter center={mapCenter} />
+        <MapRecenter center={mapCenter} zoom={mapZoom} />
         <FitBoundsToMarkers complaints={geocodedComplaints} selectedComplaintId={selectedComplaintId} />
         <FlyToSelected selectedComplaint={selectedComplaint} />
 
