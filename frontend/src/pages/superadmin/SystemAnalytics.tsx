@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useToast } from '../../components/ui/Toast';
 import Icon from '../../components/ui/Icon';
 import adminService, { DepartmentItem } from '../../services/admin.service';
+import aiService, { AICityInsights } from '../../services/ai.service';
 import s from './SystemAnalytics.module.css';
 
 // SVG Sparkline Component
@@ -49,6 +50,7 @@ export const SystemAnalytics: React.FC = () => {
 
   const [complaints, setComplaints] = useState<any[]>([]);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
+  const [aiInsights, setAiInsights] = useState<AICityInsights | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const [activeDomainTab, setActiveDomainTab] = useState<'Complaints' | 'Resolution Rate' | 'Avg. TAT'>('Complaints');
@@ -69,14 +71,16 @@ export const SystemAnalytics: React.FC = () => {
   const loadAnalyticsData = async () => {
     setIsLoading(true);
     try {
-      const [compRes, deptRes] = await Promise.all([
+      const [compRes, deptRes, insights] = await Promise.all([
         adminService.getSystemComplaints(),
         adminService.getDepartments(),
+        aiService.getCityInsights(),
       ]);
       const compList = Array.isArray(compRes) ? compRes : (compRes as any)?.results || [];
       const deptList = Array.isArray(deptRes) ? deptRes : [];
       setComplaints(compList);
       setDepartments(deptList);
+      setAiInsights(insights);
     } catch (err: any) {
       console.error('Failed to load analytics telemetry:', err);
     } finally {
@@ -1044,7 +1048,7 @@ export const SystemAnalytics: React.FC = () => {
                   <Icon name="trending_up" size={14} />
                 </div>
                 <span>
-                  {recurringIssues[0]?.title || 'Road infrastructure'} accounts for highest grievance influx in this cycle.
+                  {aiInsights?.top_predicted_categories?.[0]?.predicted_category || recurringIssues[0]?.title || 'Road infrastructure'} is the leading AI-predicted grievance category ({aiInsights?.top_predicted_categories?.[0]?.count || 0} scans).
                 </span>
               </div>
 
@@ -1053,7 +1057,7 @@ export const SystemAnalytics: React.FC = () => {
                   <Icon name="trending_up" size={14} />
                 </div>
                 <span>
-                  SLA compliance currently standing at {slaCompliance} with {resolvedComplaints} verified resolutions.
+                  AI has processed {aiInsights?.total_ai_scans || 0} grievance scans with an average urgency index of {aiInsights?.average_urgency_index || 0}/100.
                 </span>
               </div>
 
@@ -1062,9 +1066,13 @@ export const SystemAnalytics: React.FC = () => {
                   <Icon name="lightbulb" size={14} />
                 </div>
                 <span>
-                  Recommend field team priority allocation for {geographicAreas[0]?.area || 'high density wards'}.
+                  {aiInsights?.high_hazard_alerts_count || 0} high-hazard alerts require priority review; model status: {aiInsights?.system_readiness_status || 'UNAVAILABLE'}.
                 </span>
               </div>
+            </div>
+            <div className={s.aiModelMeta}>
+              <span>Model: {aiInsights?.model_version || 'Loading...'}</span>
+              <span>Last updated: {aiInsights ? new Date(aiInsights.last_updated).toLocaleString() : 'Loading...'}</span>
             </div>
           </div>
         </div>

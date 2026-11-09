@@ -817,6 +817,21 @@
   margin-top: 1px;
 }
 
+.aiModelMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  color: #64748b;
+  font-size: 10px;
+}
+
+@media (max-width: 640px) {
+  .aiModelMeta {
+    flex-direction: column;
+  }
+}
+
 .predIconRed {
   background: #fee2e2;
   color: #ef4444;

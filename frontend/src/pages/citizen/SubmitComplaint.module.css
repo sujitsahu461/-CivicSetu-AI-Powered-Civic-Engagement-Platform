@@ -551,6 +551,87 @@
   gap: 12px;
 }
 
+.duplicateCheck {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cz-border-subtle, #edf2f7);
+}
+
+.duplicateCheckHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.duplicateCheckHeader strong {
+  display: block;
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.duplicateCheckHeader p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.duplicateCheckBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 7px 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.duplicateCheckBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.duplicateMatches {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.duplicateWarning {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #b45309;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.duplicateMatch {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 11px;
+}
+
+.duplicateMatch div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.duplicateMatch strong {
+  font-size: 10px;
+}
+
 .guidelinesTitle {
   font-size: 14.5px;
   font-weight: 800;

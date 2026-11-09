@@ -42,6 +42,78 @@
   color: #2563eb;
 }
 
+.aiInspectionCard {
+  margin: 18px 0;
+  padding: 15px;
+  border: 1px solid #cfe4f2;
+  border-radius: 12px;
+  background: #f7fbfe;
+}
+
+.aiInspectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.aiInspectionHeader h4 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: #1e6f9f;
+  font-size: 13px;
+}
+
+.aiInspectionHeader p,
+.aiInspectionHeader span,
+.aiInspectionEmpty {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.aiInspectionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.aiInspectionGrid div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.aiInspectionGrid span {
+  color: #64748b;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.aiInspectionGrid strong {
+  color: #0f172a;
+  font-size: 12px;
+}
+
+.aiInspectionAlert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  color: #b45309;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .aiInspectionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* Filter Bar */
 .filterBar {
   display: flex;

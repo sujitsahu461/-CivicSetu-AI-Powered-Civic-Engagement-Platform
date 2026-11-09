@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import useComplaintStore from '../../store/complaintStore';
+import useAuthStore from '../../store/authStore';
 import feedbackService from '../../services/feedback.service';
+import aiService, { AIClassificationResult } from '../../services/ai.service';
 import { useToast } from '../../components/ui/Toast';
 import Icon from '../../components/ui/Icon';
 import { formatDate, formatTimeAgo } from '../../utils/formatters';
@@ -13,6 +15,7 @@ export const TrackComplaint: React.FC = () => {
 
   const { selectedComplaint, timeline, isLoading, error, trackComplaint, fetchTimeline } =
     useComplaintStore();
+  const { isAuthenticated } = useAuthStore();
   const { error: toastError, success } = useToast();
 
   const [inputCode, setInputCode] = useState(initialCode);
@@ -20,6 +23,8 @@ export const TrackComplaint: React.FC = () => {
   const [feedbackNotes, setFeedbackNotes] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const [aiPrediction, setAiPrediction] = useState<AIClassificationResult | null>(null);
+  const [isLoadingAiPrediction, setIsLoadingAiPrediction] = useState(false);
 
   const handleSearch = async (codeToSearch: string, silent = false) => {
     if (!codeToSearch.trim()) return;
@@ -28,6 +33,15 @@ export const TrackComplaint: React.FC = () => {
       if (!silent) setSearchParams({ code: codeToSearch.trim() });
       if (data.public_id) {
         fetchTimeline(data.public_id);
+        if (isAuthenticated) {
+          setIsLoadingAiPrediction(true);
+          aiService.getComplaintPrediction(data.public_id)
+            .then(setAiPrediction)
+            .catch(() => setAiPrediction(null))
+            .finally(() => setIsLoadingAiPrediction(false));
+        } else {
+          setAiPrediction(null);
+        }
       }
     } catch (err: any) {
       if (!silent) toastError('No grievance found with this tracking code. Please verify.');
@@ -231,6 +245,34 @@ export const TrackComplaint: React.FC = () => {
               <span className={s.metaVal}>{formatDate(selectedComplaint.created_at)}</span>
             </div>
           </div>
+
+          {isAuthenticated && (
+            <div className={s.aiPredictionCard}>
+              <div className={s.aiPredictionHeader}>
+                <div>
+                  <h3><Icon name="auto_awesome" size={18} /> AI Grievance Analysis</h3>
+                  <p>Trained CivicSetu models assess urgency, hazards, and routing.</p>
+                </div>
+                {isLoadingAiPrediction && <span className={s.aiPredictionLoading}>Refreshing...</span>}
+              </div>
+              {aiPrediction && (
+                <div className={s.aiPredictionGrid}>
+                  <div><span>Category</span><strong>{aiPrediction.predicted_category}</strong></div>
+                  <div><span>Priority</span><strong>{aiPrediction.predicted_priority}</strong></div>
+                  <div><span>Urgency</span><strong>{aiPrediction.urgency_score}/100</strong></div>
+                  <div><span>Department</span><strong>{aiPrediction.predicted_department || 'Municipal Office'}</strong></div>
+                  <div><span>Sentiment</span><strong>{aiPrediction.sentiment}</strong></div>
+                  <div><span>Estimated SLA</span><strong>{aiPrediction.estimated_resolution_hours} hrs</strong></div>
+                </div>
+              )}
+              {aiPrediction?.hazard_tags?.length ? (
+                <div className={s.aiHazardRow}>
+                  <Icon name="warning" size={15} />
+                  <span>Hazard signals: {aiPrediction.hazard_tags.join(', ')}</span>
+                </div>
+              ) : null}
+            </div>
+          )}
 
           {/* Vertical Timeline (Section 16) */}
           <div className={s.timelineSection}>

@@ -7,7 +7,7 @@ import { useToast } from '../../components/ui/Toast';
 import Icon from '../../components/ui/Icon';
 import LocationPicker from '../../components/map/LocationPicker';
 import { smartDetectGps, resolveAddressToCoords } from '../../config/mapConfig';
-import aiService, { AIClassificationResult } from '../../services/ai.service';
+import aiService, { AIClassificationResult, DuplicateMatch } from '../../services/ai.service';
 import s from './SubmitComplaint.module.css';
 
 const DEPARTMENT_MAP: Record<string, { name: string; defaultSla: string }> = {
@@ -37,6 +37,8 @@ export const SubmitComplaint: React.FC = () => {
   // AI Live Classification State
   const [aiPrediction, setAiPrediction] = useState<AIClassificationResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
+  const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeReqIdRef = useRef<number>(0);
 
@@ -158,6 +160,32 @@ export const SubmitComplaint: React.FC = () => {
 
     setSelectedFiles((prev) => [...prev, ...validFiles]);
     setPreviewUrls((prev) => [...prev, ...newPreviews]);
+  };
+
+  const handleDuplicateCheck = async () => {
+    if (!title.trim() || !description.trim()) {
+      toastError('Add a title and description before checking for similar grievances.');
+      return;
+    }
+
+    setIsCheckingDuplicates(true);
+    try {
+      const matches = await aiService.detectDuplicates(
+        title.trim(),
+        description.trim(),
+        selectedCategory,
+        latitude,
+        longitude,
+      );
+      setDuplicateMatches(matches);
+      if (matches.length === 0) {
+        success('No similar active grievances were found nearby.');
+      }
+    } catch {
+      toastError('Could not complete the duplicate grievance scan.');
+    } finally {
+      setIsCheckingDuplicates(false);
+    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -529,6 +557,42 @@ export const SubmitComplaint: React.FC = () => {
                 </div>
               </div>
             )}
+
+            <div className={s.duplicateCheck}>
+              <div className={s.duplicateCheckHeader}>
+                <div>
+                  <strong>Duplicate grievance scan</strong>
+                  <p>Check whether this issue is already reported nearby.</p>
+                </div>
+                <button
+                  type="button"
+                  className={s.duplicateCheckBtn}
+                  onClick={handleDuplicateCheck}
+                  disabled={isCheckingDuplicates || !title.trim() || !description.trim()}
+                >
+                  <Icon name="content_copy" size={15} />
+                  {isCheckingDuplicates ? 'Scanning...' : 'Scan'}
+                </button>
+              </div>
+
+              {duplicateMatches.length > 0 && (
+                <div className={s.duplicateMatches}>
+                  <span className={s.duplicateWarning}>
+                    <Icon name="warning" size={15} />
+                    {duplicateMatches.length} similar active grievance{duplicateMatches.length === 1 ? '' : 's'} found
+                  </span>
+                  {duplicateMatches.slice(0, 3).map((match) => (
+                    <div key={match.complaint_public_id} className={s.duplicateMatch}>
+                      <div>
+                        <strong>{match.tracking_code}</strong>
+                        <span>{match.title}</span>
+                      </div>
+                      <span>{Math.round(match.similarity_score * 100)}% match</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Filing Guidelines Card */}

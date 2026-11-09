@@ -9,6 +9,7 @@ import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import Icon from '../../components/ui/Icon';
 import { Complaint, ComplaintPriority, ComplaintStatus } from '../../types/complaint';
+import aiService, { AIClassificationResult } from '../../services/ai.service';
 import { formatDate, formatTimeAgo, truncateText } from '../../utils/formatters';
 import { getApiErrorMessage } from '../../utils/error';
 import s from './ComplaintManagement.module.css';
@@ -47,6 +48,8 @@ export const ComplaintManagement: React.FC = () => {
 
   // Selected complaint for modal
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
+  const [aiPrediction, setAiPrediction] = useState<AIClassificationResult | null>(null);
+  const [isLoadingAiPrediction, setIsLoadingAiPrediction] = useState(false);
 
   // Modal states
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -125,6 +128,8 @@ export const ComplaintManagement: React.FC = () => {
   };
 
   const openDetailModal = async (c: Complaint) => {
+    setAiPrediction(null);
+    setIsLoadingAiPrediction(true);
     try {
       const detail = await authorityService.getComplaintDetail(c.public_id);
       setSelectedComplaint(detail);
@@ -132,6 +137,14 @@ export const ComplaintManagement: React.FC = () => {
       setSelectedComplaint(c);
     }
     setIsDetailModalOpen(true);
+    try {
+      const prediction = await aiService.getComplaintPrediction(c.public_id);
+      setAiPrediction(prediction);
+    } catch {
+      setAiPrediction(null);
+    } finally {
+      setIsLoadingAiPrediction(false);
+    }
   };
 
   const getAvailableStatusOptions = (currentStatus?: ComplaintStatus) => {
@@ -517,6 +530,39 @@ export const ComplaintManagement: React.FC = () => {
             <div className={s.modalSection}>
               <h4 className={s.sectionTitle}>Full Grievance Description</h4>
               <p className={s.descBox}>{selectedComplaint.description}</p>
+            </div>
+
+            <div className={s.aiInspectionCard}>
+              <div className={s.aiInspectionHeader}>
+                <div>
+                  <h4><Icon name="auto_awesome" size={17} /> AI Triage Inspection</h4>
+                  <p>Model-derived routing, urgency, hazard, and SLA signals.</p>
+                </div>
+                {isLoadingAiPrediction && <span>Analyzing...</span>}
+              </div>
+              {aiPrediction && (
+                <>
+                  <div className={s.aiInspectionGrid}>
+                    <div><span>Category</span><strong>{aiPrediction.predicted_category}</strong></div>
+                    <div><span>Priority</span><strong>{aiPrediction.predicted_priority}</strong></div>
+                    <div><span>Urgency</span><strong>{aiPrediction.urgency_score}/100</strong></div>
+                    <div><span>Department</span><strong>{aiPrediction.predicted_department || 'Municipal Office'}</strong></div>
+                    <div><span>Confidence</span><strong>{Math.round(aiPrediction.confidence_score * 100)}%</strong></div>
+                    <div><span>Estimated SLA</span><strong>{aiPrediction.estimated_resolution_hours} hrs</strong></div>
+                  </div>
+                  {(aiPrediction.hazard_tags.length > 0 || aiPrediction.requires_human_review) && (
+                    <div className={s.aiInspectionAlert}>
+                      <Icon name="warning" size={15} />
+                      {aiPrediction.hazard_tags.length > 0
+                        ? `Hazards: ${aiPrediction.hazard_tags.join(', ')}`
+                        : 'Human review recommended by the routing model.'}
+                    </div>
+                  )}
+                </>
+              )}
+              {!isLoadingAiPrediction && !aiPrediction && (
+                <p className={s.aiInspectionEmpty}>AI analysis is unavailable for this complaint.</p>
+              )}
             </div>
 
             {/* Evidence Photos */}
