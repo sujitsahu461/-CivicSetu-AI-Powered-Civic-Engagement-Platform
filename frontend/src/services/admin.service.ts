@@ -52,6 +52,11 @@ export const adminService = {
     return Array.isArray(res.data) ? res.data : res.data.results || [];
   },
 
+  async getFeedbacks(): Promise<any[]> {
+    const res = await api.get('/feedback/authority/feedbacks/');
+    return Array.isArray(res.data) ? res.data : [];
+  },
+
   async getDepartmentDetail(publicId: string): Promise<DepartmentItem> {
     const res = await api.get(`/departments/${publicId}/`);
     return res.data;

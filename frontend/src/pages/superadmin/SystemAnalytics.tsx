@@ -50,6 +50,7 @@ export const SystemAnalytics: React.FC = () => {
 
   const [complaints, setComplaints] = useState<any[]>([]);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [aiInsights, setAiInsights] = useState<AICityInsights | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -71,16 +72,18 @@ export const SystemAnalytics: React.FC = () => {
   const loadAnalyticsData = async () => {
     setIsLoading(true);
     try {
-      const [compRes, deptRes, insights] = await Promise.all([
+      const [compRes, deptRes, insights, feedbackRes] = await Promise.all([
         adminService.getSystemComplaints(),
         adminService.getDepartments(),
         aiService.getCityInsights(),
+        adminService.getFeedbacks(),
       ]);
       const compList = Array.isArray(compRes) ? compRes : (compRes as any)?.results || [];
       const deptList = Array.isArray(deptRes) ? deptRes : [];
       setComplaints(compList);
       setDepartments(deptList);
       setAiInsights(insights);
+      setFeedbacks(feedbackRes);
     } catch (err: any) {
       console.error('Failed to load analytics telemetry:', err);
     } finally {
@@ -381,10 +384,23 @@ export const SystemAnalytics: React.FC = () => {
 
   // Derived Satisfaction Score
   const satisfactionScore = useMemo(() => {
-    if (totalComplaints === 0) return '4.8';
-    const num = Math.min(5.0, Math.max(3.5, 4.0 + (resolvedComplaints / totalComplaints) * 0.9));
-    return num.toFixed(1);
-  }, [totalComplaints, resolvedComplaints]);
+    if (feedbacks.length === 0) return '0.0';
+    const total = feedbacks.reduce((sum, feedback) => sum + Number(feedback.rating || 0), 0);
+    return (total / feedbacks.length).toFixed(1);
+  }, [feedbacks]);
+
+  const ratingDistribution = useMemo(() => {
+    const counts = [1, 2, 3, 4, 5].map((stars) =>
+      feedbacks.filter((feedback) => Number(feedback.rating) === stars).length
+    );
+    const max = Math.max(...counts, 1);
+    return counts.map((count, index) => ({
+      stars: `${index + 1} ★`,
+      count,
+      pct: feedbacks.length ? Math.round((count / feedbacks.length) * 100) : 0,
+      width: Math.round((count / max) * 100),
+    })).reverse();
+  }, [feedbacks]);
 
   return (
     <div className={s.pageLayout}>
@@ -916,7 +932,7 @@ export const SystemAnalytics: React.FC = () => {
             <div className={s.chartCardHeader} style={{ marginBottom: 4 }}>
               <div>
                 <h3 className={s.cardTitle}>Citizen Satisfaction ⓘ</h3>
-                <p className={s.cardSubtitle}>Based on {Math.max(1, totalComplaints * 3)} verified citizen reviews</p>
+                <p className={s.cardSubtitle}>Based on {feedbacks.length} verified citizen reviews</p>
               </div>
             </div>
 
@@ -935,17 +951,11 @@ export const SystemAnalytics: React.FC = () => {
             </div>
 
             <div className={s.starBarsList}>
-              {[
-                { stars: '5 ★', pct: 75, count: Math.round(totalComplaints * 2.2) },
-                { stars: '4 ★', pct: 16, count: Math.round(totalComplaints * 0.5) },
-                { stars: '3 ★', pct: 6, count: Math.round(totalComplaints * 0.2) },
-                { stars: '2 ★', pct: 2, count: 1 },
-                { stars: '1 ★', pct: 1, count: 0 },
-              ].map((row) => (
+              {ratingDistribution.map((row) => (
                 <div key={row.stars} className={s.starBarRow}>
                   <span className={s.starBarLabel}>{row.stars}</span>
                   <div className={s.starBarTrack}>
-                    <div className={s.starBarFill} style={{ width: `${row.pct}%` }} />
+                    <div className={s.starBarFill} style={{ width: `${row.width}%` }} />
                   </div>
                   <span className={s.starBarVal}>
                     {row.pct}% ({row.count})

@@ -74,7 +74,7 @@ export const SubmitComplaint: React.FC = () => {
     setIsAnalyzing(true);
     debounceTimerRef.current = setTimeout(async () => {
       try {
-        const result = await aiService.classifyComplaint(trimmedTitle, trimmedDesc, address.trim());
+        const result = await aiService.classifyComplaint(trimmedTitle, trimmedDesc);
         if (currentReqId === activeReqIdRef.current) {
           setAiPrediction(result);
           setAiError('');
@@ -103,7 +103,7 @@ export const SubmitComplaint: React.FC = () => {
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [title, description, address]);
+  }, [title, description]);
 
   const userWardName = useMemo(() => {
     if (!user?.address) return 'Modipara';
