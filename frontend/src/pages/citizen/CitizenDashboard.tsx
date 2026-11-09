@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import useComplaintStore from '../../store/complaintStore';
+import IncidentMap from '../../components/map/IncidentMap';
 import Icon from '../../components/ui/Icon';
 import { showToast } from '../../components/ui/Toast';
 import { formatTimeAgo, truncateText } from '../../utils/formatters';
@@ -154,6 +155,41 @@ export const CitizenDashboard: React.FC = () => {
         </div>
       </section>
 
+      {/* ================= LIVE CIVIC RADAR MAP SECTION (LEAFLET.JS & OPENSTREETMAP) ================= */}
+      <section className={s.mapSection}>
+        <div className={s.mapHeader}>
+          <div className={s.mapTitleGroup}>
+            <div className={s.mapIconBadge}>
+              <Icon name="explore" size={20} />
+            </div>
+            <div>
+              <h2 className={s.mapSectionTitle}>Local Civic Radar & Incident Map</h2>
+              <p className={s.mapSectionSubtitle}>
+                Live spatial map of community grievances powered by Leaflet.js &amp; OpenStreetMap
+              </p>
+            </div>
+          </div>
+          <div className={s.mapActions}>
+            <Link to="/citizen/submit" className={s.pinIssueBtn}>
+              <Icon name="add_location_alt" size={15} />
+              <span>Report At Location</span>
+            </Link>
+            <Link to="/map" className={s.fullMapBtn}>
+              <span>Full City Radar</span>
+              <Icon name="open_in_new" size={14} />
+            </Link>
+          </div>
+        </div>
+
+        <div className={s.mapContainerWrapper}>
+          <IncidentMap
+            complaints={complaints}
+            height="380px"
+            zoom={14}
+          />
+        </div>
+      </section>
+
       {/* ================= MAIN CONTENT: 2 COLUMNS ================= */}
       <section className={s.mainGrid}>
         {/* LEFT: Recent Grievances */}
@@ -293,6 +329,20 @@ export const CitizenDashboard: React.FC = () => {
                 <div className={s.actionContent}>
                   <h3 className={s.actionName}>My Grievances</h3>
                   <p className={s.actionDesc}>View your complaints and latest updates.</p>
+                </div>
+                <div className={s.actionArrow}>
+                  <Icon name="chevron_right" size={20} />
+                </div>
+              </Link>
+
+              {/* Action 4: Explore City Radar Map */}
+              <Link to="/map" className={s.actionItem}>
+                <div className={s.actionIconIndigo}>
+                  <Icon name="explore" size={24} />
+                </div>
+                <div className={s.actionContent}>
+                  <h3 className={s.actionName}>City Radar Map</h3>
+                  <p className={s.actionDesc}>Explore interactive incident map across wards.</p>
                 </div>
                 <div className={s.actionArrow}>
                   <Icon name="chevron_right" size={20} />

@@ -52,6 +52,7 @@ export const AuthorityLayout: React.FC = () => {
   const navLinks = [
     { label: 'Dashboard', path: '/authority/dashboard', icon: 'space_dashboard' },
     { label: 'Complaints', path: '/authority/complaints', icon: 'assignment', isHighlight: true },
+    { label: 'City Radar Map', path: '/map', icon: 'explore' },
     { label: 'Analytics', path: '/authority/analytics', icon: 'analytics' },
     { label: 'Notifications', path: '/authority/notifications', icon: 'notifications' },
     { label: 'Profile', path: '/authority/profile', icon: 'person' },
@@ -254,7 +255,7 @@ export const AuthorityLayout: React.FC = () => {
 
           <div className={s.footerBottom}>
             <div>
-              &copy; {new Date().getFullYear()} CivicSetu. Municipal Authority Grievance Redressal System.
+              &copy; 2028 CivicSetu. Municipal Authority Grievance Redressal System.
             </div>
             <div className={s.footerLinks}>
               <Link to="/authority/dashboard" className={s.footerLink}>Dashboard</Link>

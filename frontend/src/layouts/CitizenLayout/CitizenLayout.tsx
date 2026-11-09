@@ -92,7 +92,9 @@ export const CitizenLayout: React.FC = () => {
           {/* Center: Navigation Links */}
           <nav className={s.navLinks}>
             {navLinks.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive =
+                location.pathname === item.path ||
+                (item.path === '/map' && location.pathname === '/citizen/map');
               return (
                 <Link
                   key={item.path}

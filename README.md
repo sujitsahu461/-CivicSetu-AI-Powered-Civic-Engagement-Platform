@@ -405,6 +405,21 @@ npm run dev
 ```
 - **Vite React UI**: [http://127.0.0.1:5173/](http://127.0.0.1:5173/) (proxies `/api` and `/media` to 8000)
 
+### Windows Launchers
+From the repository root, the included batch files provide convenient startup options:
+
+```bat
+start_civicsetu.bat
+```
+
+This starts Django with the built React SPA at `http://127.0.0.1:8000/`.
+
+```bat
+start_full_dev.bat
+```
+
+This starts Django on port `8000` and the Vite HMR server on port `5173` in separate windows.
+
 ---
 
 ## 20. API Documentation

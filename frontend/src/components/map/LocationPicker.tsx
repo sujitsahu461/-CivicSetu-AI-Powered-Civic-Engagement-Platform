@@ -28,17 +28,30 @@ interface LocationPickerProps {
   height?: string;
 }
 
-// Custom Draggable Pin Icon
+// Fix default leaflet marker assets in bundlers
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+// Custom Draggable Pin Icon (High-Definition SVG with exact ground anchor)
 const pinIcon = L.divIcon({
   className: 'custom-picker-pin',
   html: `
-    <div class="${s.pickerPinWrapper}">
-      <div class="${s.pickerPin}"></div>
-      <div class="${s.pickerShadow}"></div>
+    <div style="position:relative; width:34px; height:42px; display:flex; flex-direction:column; align-items:center; cursor:grab;">
+      <svg width="34" height="42" viewBox="0 0 34 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));">
+        <path d="M17 0C7.61116 0 0 7.61116 0 17C0 27.5 17 42 17 42C17 42 34 27.5 34 17C34 7.61116 26.3888 0 17 0Z" fill="#EA580C"/>
+        <path d="M17 2C8.71573 2 2 8.71573 2 17C2 26 17 39.5 17 39.5C17 39.5 32 26 32 17C32 8.71573 25.2843 2 17 2Z" fill="#F97316"/>
+        <circle cx="17" cy="17" r="6.5" fill="#FFFFFF"/>
+        <circle cx="17" cy="17" r="3" fill="#9A3412"/>
+      </svg>
     </div>
   `,
-  iconSize: [36, 42],
-  iconAnchor: [18, 42],
+  iconSize: [34, 42],
+  iconAnchor: [17, 42],
+  popupAnchor: [0, -42],
 });
 
 // Click handler helper
@@ -200,14 +213,19 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   }, [initialLat, initialLng]);
 
-  // Handle marker drag
-  const handleDragEnd = () => {
-    const marker = markerRef.current;
-    if (marker != null) {
-      const latlng = marker.getLatLng();
-      handlePositionChange(latlng.lat, latlng.lng);
-    }
-  };
+  // Handle marker drag with memoized event handler
+  const markerEventHandlers = useMemo(
+    () => ({
+      dragend() {
+        const marker = markerRef.current;
+        if (marker != null) {
+          const latlng = marker.getLatLng();
+          handlePositionChange(latlng.lat, latlng.lng);
+        }
+      },
+    }),
+    [handlePositionChange]
+  );
 
   const userWardName = useMemo(() => {
     if (!user?.address) return 'Modipara';
@@ -502,7 +520,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
           <Marker
             draggable={true}
-            eventHandlers={{ dragend: handleDragEnd }}
+            eventHandlers={markerEventHandlers}
             position={position}
             ref={markerRef}
             icon={pinIcon}

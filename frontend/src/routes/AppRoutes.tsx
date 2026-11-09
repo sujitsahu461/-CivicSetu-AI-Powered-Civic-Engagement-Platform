@@ -98,6 +98,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/citizen/tracking" element={<TrackComplaint />} />
         <Route path="/track" element={<TrackComplaint />} />
         <Route path="/map" element={<MapView />} />
+        <Route path="/citizen/map" element={<MapView />} />
       </Route>
 
       {/* Citizen Protected Module */}

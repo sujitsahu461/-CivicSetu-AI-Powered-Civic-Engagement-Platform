@@ -177,10 +177,9 @@ export const MAP_TILE_LAYERS: Record<
 > = {
   osm: {
     name: 'OpenStreetMap (HD Clean)',
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
     maxZoom: 19,
-    subdomains: 'abc',
   },
   esri: {
     name: 'Esri Street Map (High-Res)',
