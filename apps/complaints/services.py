@@ -10,7 +10,7 @@ from django.utils import timezone
 from apps.accounts.models import UserRole
 from apps.complaint_history.models import ComplaintHistory, HistoryAction
 from apps.complaint_images.models import ComplaintImage
-from apps.complaints.models import Complaint, ComplaintPriority, ComplaintStatus
+from apps.complaints.models import Complaint, ComplaintCategory, ComplaintPriority, ComplaintStatus
 
 
 User = get_user_model()

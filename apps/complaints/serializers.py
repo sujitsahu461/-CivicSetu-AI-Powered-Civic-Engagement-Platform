@@ -146,6 +146,7 @@ class ComplaintDetailSerializer(serializers.ModelSerializer):
 
     citizen = ComplaintUserInlineSerializer(read_only=True)
     category_display = serializers.CharField(source="get_category_display", read_only=True)
+    department_name = serializers.SerializerMethodField()
     assigned_authority = ComplaintUserInlineSerializer(read_only=True)
     images = ComplaintImageSerializer(many=True, read_only=True)
     feedback = ComplaintFeedbackInlineSerializer(read_only=True)
@@ -162,6 +163,7 @@ class ComplaintDetailSerializer(serializers.ModelSerializer):
             "priority",
             "category",
             "category_display",
+            "department_name",
             "citizen",
             "assigned_authority",
             "location_address",
@@ -182,6 +184,10 @@ class ComplaintDetailSerializer(serializers.ModelSerializer):
         if latest:
             return ComplaintHistorySerializer(latest).data
         return None
+
+    def get_department_name(self, obj):
+        prediction = obj.ai_predictions.first()
+        return prediction.predicted_department if prediction else ""
 
 
 class ComplaintCreateSerializer(serializers.Serializer):

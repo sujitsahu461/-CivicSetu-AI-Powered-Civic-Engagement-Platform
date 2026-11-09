@@ -237,8 +237,6 @@ export const SubmitComplaint: React.FC = () => {
       const created = await submitComplaint({
         title: title.trim(),
         description: description.trim(),
-        category: selectedCategory,
-        priority: selectedPriority,
         location_address: address.trim(),
         latitude: cleanLat,
         longitude: cleanLng,
