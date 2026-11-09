@@ -187,6 +187,11 @@ class ComplaintDetailSerializer(serializers.ModelSerializer):
 class ComplaintCreateSerializer(serializers.Serializer):
     """Validates data for filing a new complaint."""
 
+    use_ai = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text="Use the category, priority, and department classifiers for this submission.",
+    )
     category = serializers.ChoiceField(
         choices=ComplaintCategory.choices, required=False, allow_null=True, allow_blank=True, default=None
     )

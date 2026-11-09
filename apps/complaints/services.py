@@ -68,9 +68,10 @@ class ComplaintService:
         location_address="",
         latitude=None,
         longitude=None,
-        priority=ComplaintPriority.MEDIUM,
+        priority=None,
         images=None,
         department=None,
+        require_ai=False,
         **kwargs,
     ):
         """Create a new complaint with initial status PENDING and log history event."""
@@ -138,6 +139,10 @@ class ComplaintService:
                 resolved_category = triage_res.get("predicted_category", "ROAD")
                 predicted_priority = triage_res.get("predicted_priority", ComplaintPriority.MEDIUM)
             except Exception as exc:
+                if require_ai:
+                    raise ValueError(
+                        "AI classification is temporarily unavailable. Please try again."
+                    ) from exc
                 logger.warning("AI triage prediction failed during complaint creation: %s", exc)
                 try:
                     from apps.ai_engine.services import AIEngineService

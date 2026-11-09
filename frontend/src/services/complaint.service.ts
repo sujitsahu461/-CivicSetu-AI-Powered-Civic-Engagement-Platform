@@ -32,6 +32,7 @@ export const complaintService = {
     const formData = new FormData();
     formData.append('title', payload.title);
     formData.append('description', payload.description);
+    formData.append('use_ai', 'true');
     if (payload.category) formData.append('category', payload.category);
     formData.append('location_address', payload.location_address);
     if (payload.priority) formData.append('priority', payload.priority);

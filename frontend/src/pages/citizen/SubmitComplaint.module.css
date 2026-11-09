@@ -461,6 +461,20 @@
   gap: 14px;
 }
 
+.aiErrorBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-bottom: 12px;
+  padding: 9px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .aiBadgeRow {
   display: flex;
   justify-content: space-between;

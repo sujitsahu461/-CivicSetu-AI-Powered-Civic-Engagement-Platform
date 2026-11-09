@@ -318,6 +318,8 @@ Copy `.env.example` to `.env`:
 cp .env.example .env
 ```
 
+For the bundled scikit-learn model artifacts, use the tested Python 3.12 runtime when it is available. The Windows launchers automatically prefer `py -3.12` and fall back to `python`.
+
 Ensure the following variables are configured:
 ```ini
 DJANGO_ENV=development

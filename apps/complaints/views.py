@@ -116,14 +116,15 @@ class ComplaintCreateView(APIView):
         try:
             complaint = ComplaintService.create_complaint(
                 citizen=citizen,
-                category=data.get("category"),
+                category=None if data.get("use_ai") else data.get("category"),
                 title=data["title"],
                 description=data["description"],
                 location_address=data["location_address"],
                 latitude=data.get("latitude"),
                 longitude=data.get("longitude"),
-                priority=data.get("priority"),
+                priority=None if data.get("use_ai") else data.get("priority"),
                 images=images,
+                require_ai=data.get("use_ai", False),
             )
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)

@@ -37,6 +37,7 @@ export const SubmitComplaint: React.FC = () => {
   // AI Live Classification State
   const [aiPrediction, setAiPrediction] = useState<AIClassificationResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiError, setAiError] = useState('');
   const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
   const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -65,6 +66,7 @@ export const SubmitComplaint: React.FC = () => {
 
     if (trimmedTitle.length < 3 && trimmedDesc.length < 3) {
       setAiPrediction(null);
+      setAiError('');
       setIsAnalyzing(false);
       return;
     }
@@ -75,6 +77,7 @@ export const SubmitComplaint: React.FC = () => {
         const result = await aiService.classifyComplaint(trimmedTitle, trimmedDesc, address.trim());
         if (currentReqId === activeReqIdRef.current) {
           setAiPrediction(result);
+          setAiError('');
           if (result?.predicted_category) {
             setSelectedCategory(result.predicted_category as ComplaintCategory);
           }
@@ -85,6 +88,8 @@ export const SubmitComplaint: React.FC = () => {
       } catch (err) {
         if (currentReqId === activeReqIdRef.current) {
           console.error('Live AI classification failed:', err);
+          setAiPrediction(null);
+          setAiError('AI classification is temporarily unavailable. Please try again before submitting.');
         }
       } finally {
         if (currentReqId === activeReqIdRef.current) {
@@ -210,6 +215,16 @@ export const SubmitComplaint: React.FC = () => {
 
     if (!address.trim()) {
       setFormError('Please provide a specific street address or location description.');
+      return;
+    }
+
+    if (isAnalyzing) {
+      setFormError('Please wait for the AI classifiers to finish analyzing this grievance.');
+      return;
+    }
+
+    if (!aiPrediction) {
+      setFormError(aiError || 'AI classification is required before submitting this grievance.');
       return;
     }
 
@@ -502,6 +517,12 @@ export const SubmitComplaint: React.FC = () => {
               </div>
             ) : (
               <div className={s.aiResultBox}>
+                {aiError && (
+                  <div className={s.aiErrorBox}>
+                    <Icon name="error" size={15} />
+                    <span>{aiError}</span>
+                  </div>
+                )}
                 <div className={s.aiBadgeRow}>
                   <span className={s.aiBadgeLabel}>Category</span>
                   <span className={s.aiBadgeValue}>
