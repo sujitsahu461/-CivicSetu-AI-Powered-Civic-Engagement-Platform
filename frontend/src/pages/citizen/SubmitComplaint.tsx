@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import useComplaintStore from '../../store/complaintStore';
-import { ComplaintCategory, ComplaintPriority } from '../../types/complaint';
 import { useToast } from '../../components/ui/Toast';
 import Icon from '../../components/ui/Icon';
 import LocationPicker from '../../components/map/LocationPicker';
@@ -26,8 +25,6 @@ export const SubmitComplaint: React.FC = () => {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<ComplaintCategory>('ROAD');
-  const [selectedPriority, setSelectedPriority] = useState<ComplaintPriority>('MEDIUM');
   const [address, setAddress] = useState('');
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
@@ -78,12 +75,6 @@ export const SubmitComplaint: React.FC = () => {
         if (currentReqId === activeReqIdRef.current) {
           setAiPrediction(result);
           setAiError('');
-          if (result?.predicted_category) {
-            setSelectedCategory(result.predicted_category as ComplaintCategory);
-          }
-          if (result?.predicted_priority) {
-            setSelectedPriority(result.predicted_priority as ComplaintPriority);
-          }
         }
       } catch (err) {
         if (currentReqId === activeReqIdRef.current) {
@@ -172,13 +163,17 @@ export const SubmitComplaint: React.FC = () => {
       toastError('Add a title and description before checking for similar grievances.');
       return;
     }
+    if (!aiPrediction?.predicted_category) {
+      toastError('Wait for AI classification to complete before scanning for duplicates.');
+      return;
+    }
 
     setIsCheckingDuplicates(true);
     try {
       const matches = await aiService.detectDuplicates(
         title.trim(),
         description.trim(),
-        selectedCategory,
+        aiPrediction.predicted_category,
         latitude,
         longitude,
       );
@@ -246,7 +241,7 @@ export const SubmitComplaint: React.FC = () => {
       const deptName =
         created.department_name ||
         created.category_display ||
-        DEPARTMENT_MAP[created.category || selectedCategory]?.name ||
+        DEPARTMENT_MAP[created.category]?.name ||
         created.category;
 
       setSubmittedData({
@@ -269,10 +264,12 @@ export const SubmitComplaint: React.FC = () => {
     aiPrediction?.predicted_department ||
     aiPrediction?.department_routing?.db_department_name ||
     aiPrediction?.department_routing?.predicted_department ||
-    (aiPrediction?.predicted_category ? DEPARTMENT_MAP[aiPrediction.predicted_category]?.name || aiPrediction.predicted_category : DEPARTMENT_MAP[selectedCategory]?.name);
+    aiPrediction?.predicted_category
+      ? DEPARTMENT_MAP[aiPrediction.predicted_category]?.name || aiPrediction.predicted_category
+      : 'Auto-routed by AI';
 
-  const displayCategory = aiPrediction?.predicted_category || selectedCategory;
-  const displayPriority = aiPrediction?.predicted_priority || selectedPriority;
+  const displayCategory = aiPrediction?.predicted_category;
+  const displayPriority = aiPrediction?.predicted_priority;
   const displayConfidence = aiPrediction ? Math.round(aiPrediction.confidence_score * 100) : null;
   const displaySla = aiPrediction?.estimated_resolution_hours
     ? `${aiPrediction.estimated_resolution_hours} hours`
@@ -524,7 +521,7 @@ export const SubmitComplaint: React.FC = () => {
                 <div className={s.aiBadgeRow}>
                   <span className={s.aiBadgeLabel}>Category</span>
                   <span className={s.aiBadgeValue}>
-                    {aiPrediction ? displayCategory : 'Pending input...'}
+                    {displayCategory || 'Pending input...'}
                   </span>
                 </div>
 
@@ -538,7 +535,7 @@ export const SubmitComplaint: React.FC = () => {
                 <div className={s.aiBadgeRow}>
                   <span className={s.aiBadgeLabel}>Priority</span>
                   <div>
-                    {aiPrediction ? (
+                    {displayPriority ? (
                       <span
                         className={
                           displayPriority === 'HIGH'

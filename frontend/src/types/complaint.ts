@@ -92,8 +92,6 @@ export interface Complaint {
 export interface SubmitComplaintPayload {
   title: string;
   description: string;
-  category?: ComplaintCategory;
-  priority?: ComplaintPriority;
   location_address: string;
   latitude?: number | null;
   longitude?: number | null;

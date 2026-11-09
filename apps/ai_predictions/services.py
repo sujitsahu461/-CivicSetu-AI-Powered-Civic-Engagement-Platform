@@ -118,14 +118,15 @@ class AITriageService:
         complaint: Optional[Complaint] = None,
     ) -> Dict[str, Any]:
         """Analyze grievance text to classify category, urgency, hazard tags, and priority."""
-        full_text = f"{title} {description} {location_address}".lower()
+        # Classification must be driven by the citizen's complaint text. Location
+        # is collected for routing and duplicate detection, not for model choice.
+        full_text = f"{title} {description}".lower()
         tokens = set(_tokenize(full_text))
 
         # 1. AI ML Category Classification
         ml_prediction = AIEngineService.classify_grievance(
             title=title,
             description=description,
-            location_address=location_address,
         )
         best_category = ml_prediction["predicted_category"]
         confidence = ml_prediction["confidence_score"]
@@ -135,7 +136,6 @@ class AITriageService:
             title=title,
             description=description,
             category=best_category,
-            location_address=location_address,
         )
         ml_priority = ml_priority_res.get("predicted_priority", ComplaintPriority.MEDIUM)
         ml_priority_conf = ml_priority_res.get("confidence_score", 0.50)
@@ -146,7 +146,6 @@ class AITriageService:
             description=description,
             category=best_category,
             priority=ml_priority,
-            location_address=location_address,
         )
         predicted_department = dept_routing_res.get("predicted_department", "Public Works")
         requires_human_review = dept_routing_res.get("requires_human_review", False)

@@ -91,7 +91,7 @@ class ComplaintCreateView(APIView):
         request=ComplaintCreateSerializer,
         responses={201: ComplaintDetailSerializer},
         summary="Create a new complaint",
-        description="Submit a civic complaint with details, location coordinates, department selection, and optional image files.",
+        description="Submit a civic complaint with details, location coordinates, and optional image files. Category, urgency, and department are assigned by trained AI classifiers.",
     )
     def post(self, request):
         serializer = ComplaintCreateSerializer(data=request.data)

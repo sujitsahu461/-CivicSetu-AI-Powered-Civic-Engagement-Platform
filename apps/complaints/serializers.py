@@ -195,7 +195,7 @@ class ComplaintCreateSerializer(serializers.Serializer):
 
     use_ai = serializers.BooleanField(
         required=False,
-        default=False,
+        default=True,
         help_text="Use the category, priority, and department classifiers for this submission.",
     )
     category = serializers.ChoiceField(

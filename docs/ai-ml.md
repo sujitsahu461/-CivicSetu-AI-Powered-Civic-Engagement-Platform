@@ -40,7 +40,7 @@ Predicted civic category label along with prediction confidence:
 ### Input Features
 - `text`: Complaint title and description.
 - `category`: Civic category string (e.g., `ROAD`, `WATER`).
-- `location`: Optional location address.
+- Location is not used as a model-selection input; it is collected after classification for routing and duplicate detection.
 
 ### Output
 Predicts the operational urgency level:
@@ -97,6 +97,12 @@ High-risk keywords (e.g., *sparking, fire, explosion, live wire, gas leak, conta
                              ▼
        Complaint Registered & Authority Assigned with Audit Trail
 ```
+
+Citizens do not choose a category, urgency, or department. The citizen portal
+sends only the complaint title, description, and later the location; the trained
+category, priority, and department classifiers determine the triage result
+automatically. Submission is blocked when the required AI classification is
+unavailable rather than saving manual defaults.
 
 ---
 

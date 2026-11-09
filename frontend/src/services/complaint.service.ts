@@ -33,9 +33,7 @@ export const complaintService = {
     formData.append('title', payload.title);
     formData.append('description', payload.description);
     formData.append('use_ai', 'true');
-    if (payload.category) formData.append('category', payload.category);
     formData.append('location_address', payload.location_address);
-    if (payload.priority) formData.append('priority', payload.priority);
     if (payload.latitude != null) formData.append('latitude', String(payload.latitude));
     if (payload.longitude != null) formData.append('longitude', String(payload.longitude));
 
