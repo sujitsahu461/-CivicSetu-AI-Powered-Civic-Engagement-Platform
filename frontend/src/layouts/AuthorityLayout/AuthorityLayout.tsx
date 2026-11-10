@@ -52,7 +52,6 @@ export const AuthorityLayout: React.FC = () => {
   const navLinks = [
     { label: 'Dashboard', path: '/authority/dashboard', icon: 'space_dashboard' },
     { label: 'Complaints', path: '/authority/complaints', icon: 'assignment', isHighlight: true },
-    { label: 'City Radar Map', path: '/map', icon: 'explore' },
     { label: 'Analytics', path: '/authority/analytics', icon: 'analytics' },
     { label: 'Notifications', path: '/authority/notifications', icon: 'notifications' },
     { label: 'Profile', path: '/authority/profile', icon: 'person' },
