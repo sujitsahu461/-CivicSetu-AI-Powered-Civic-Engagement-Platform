@@ -36,6 +36,7 @@ DB_USER=civicsetu_app
 DB_PASSWORD=strong_database_password
 DB_HOST=127.0.0.1
 DB_PORT=3306
+DB_ENGINE=django.db.backends.mysql
 
 CSRF_TRUSTED_ORIGINS=https://yourdomain.com
 CORS_ALLOWED_ORIGINS=https://yourdomain.com

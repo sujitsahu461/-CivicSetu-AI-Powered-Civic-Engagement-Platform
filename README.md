@@ -333,6 +333,7 @@ DB_USER=root
 DB_PASSWORD=your_mysql_password
 DB_HOST=127.0.0.1
 DB_PORT=3306
+DB_ENGINE=django.db.backends.mysql
 
 CSRF_TRUSTED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173
