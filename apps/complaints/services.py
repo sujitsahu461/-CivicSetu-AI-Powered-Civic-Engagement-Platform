@@ -433,28 +433,6 @@ class ComplaintSearchService:
     """Provides search, filtering, and query scoping by user role."""
 
     @staticmethod
-    def filter_public_complaints(query="", status=None, priority=None, category=None):
-        """Build the public, identity-free complaint list used by the incident map."""
-        queryset = Complaint.objects.all()
-
-        if query:
-            queryset = queryset.filter(
-                Q(title__icontains=query)
-                | Q(description__icontains=query)
-                | Q(tracking_code__icontains=query)
-                | Q(location_address__icontains=query)
-            )
-
-        if status:
-            queryset = queryset.filter(status=status)
-        if priority:
-            queryset = queryset.filter(priority=priority)
-        if category:
-            queryset = queryset.filter(category=category)
-
-        return queryset
-
-    @staticmethod
     def filter_complaints(
         user,
         query="",

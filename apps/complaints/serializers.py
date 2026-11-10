@@ -141,31 +141,6 @@ class ComplaintListSerializer(serializers.ModelSerializer):
         return obj.images.count()
 
 
-class PublicComplaintListSerializer(serializers.ModelSerializer):
-    """Public map summary without citizen or staff identity fields."""
-
-    category_display = serializers.CharField(source="get_category_display", read_only=True)
-
-    class Meta:
-        model = Complaint
-        fields = (
-            "public_id",
-            "tracking_code",
-            "title",
-            "description",
-            "status",
-            "priority",
-            "category",
-            "category_display",
-            "location_address",
-            "latitude",
-            "longitude",
-            "created_at",
-            "updated_at",
-        )
-        read_only_fields = fields
-
-
 class ComplaintDetailSerializer(serializers.ModelSerializer):
     """Detailed read-only complaint representation with nested images, feedback, and history."""
 

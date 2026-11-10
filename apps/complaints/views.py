@@ -1,7 +1,6 @@
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.generics import ListAPIView
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,7 +20,6 @@ from apps.complaints.serializers import (
     ComplaintListSerializer,
     ComplaintStatusUpdateSerializer,
     ComplaintTrackingSerializer,
-    PublicComplaintListSerializer,
 )
 from apps.complaints.services import ComplaintSearchService, ComplaintService
 from apps.users.permissions import IsActiveUser
@@ -40,11 +38,6 @@ def _complaint_not_found():
     return Response({"detail": "Complaint not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
-class ComplaintListPagination(PageNumberPagination):
-    page_size_query_param = "page_size"
-    max_page_size = 1000
-
-
 # ---------------------------------------------------------------------------
 # Complaint List & Create
 # ---------------------------------------------------------------------------
@@ -53,9 +46,8 @@ class ComplaintListPagination(PageNumberPagination):
 class ComplaintListView(ListAPIView):
     """List complaints with search, role-based scoping, filtering, and pagination."""
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, IsActiveUser]
     serializer_class = ComplaintListSerializer
-    pagination_class = ComplaintListPagination
 
     @extend_schema(
         tags=["Complaints"],
@@ -78,14 +70,6 @@ class ComplaintListView(ListAPIView):
         filter_serializer.is_valid(raise_exception=True)
         data = filter_serializer.validated_data
 
-        if not self.request.user.is_authenticated:
-            return ComplaintSearchService.filter_public_complaints(
-                query=data.get("q", ""),
-                status=data.get("status"),
-                priority=data.get("priority"),
-                category=data.get("category"),
-            )
-
         return ComplaintSearchService.filter_complaints(
             user=self.request.user,
             query=data.get("q", ""),
@@ -95,11 +79,6 @@ class ComplaintListView(ListAPIView):
             citizen_public_id=data.get("citizen"),
             assigned_authority_public_id=data.get("assigned_authority"),
         )
-
-    def get_serializer_class(self):
-        if not self.request.user.is_authenticated:
-            return PublicComplaintListSerializer
-        return super().get_serializer_class()
 
 
 class ComplaintCreateView(APIView):

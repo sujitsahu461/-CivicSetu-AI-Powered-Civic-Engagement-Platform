@@ -47,7 +47,6 @@ export const MapView: React.FC = () => {
         {
           category: categoryFilter || undefined,
           status: statusFilter || undefined,
-          page_size: 1000,
         },
         silent
       );

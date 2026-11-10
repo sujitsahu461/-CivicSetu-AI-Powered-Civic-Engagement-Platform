@@ -6,66 +6,32 @@ CivicSetu is a full-stack, enterprise-grade civic engagement and municipal griev
 
 ---
 
-## Quick Start
-
-The repository includes both a Django REST backend and a React/Vite frontend. The default development configuration uses the included SQLite database, so no external database is required for a local start.
-
-### Windows
-
-```bat
-copy .env.example .env
-start_full_dev.bat
-```
-
-### macOS/Linux
-
-```bash
-cp .env.example .env
-python manage.py migrate
-python manage.py runserver 127.0.0.1:8000
-```
-
-In a second terminal:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Open the application at [http://127.0.0.1:5173/](http://127.0.0.1:5173/). The backend is available at [http://127.0.0.1:8000/](http://127.0.0.1:8000/) and the Swagger UI is available at [http://127.0.0.1:8000/api/docs/](http://127.0.0.1:8000/api/docs/).
-
-> The Windows launcher prefers Python 3.12 when installed. If it is unavailable, it falls back to the active `python` command.
-
----
-
 ## Table of Contents
 
-1. [Quick Start](#quick-start)
-2. [Project Overview](#1-project-overview)
-3. [Problem Statement](#3-problem-statement)
-4. [Proposed Solution](#4-proposed-solution)
-5. [Key Features](#5-key-features)
-6. [Architecture](#6-architecture)
-7. [Technology Stack](#7-technology-stack)
-8. [AI/ML Capabilities](#8-aiml-capabilities)
-9. [User Roles](#9-user-roles)
-10. [Civic Categories](#10-civic-categories)
-11. [Complaint Lifecycle](#11-complaint-lifecycle)
-12. [Project Structure](#12-project-structure)
-13. [Installation](#13-installation)
-14. [Backend Setup](#14-backend-setup)
-15. [Frontend Setup](#15-frontend-setup)
-16. [Environment Configuration](#16-environment-configuration)
-17. [Database Configuration](#17-database-configuration)
-18. [AI Model Setup](#18-ai-model-setup)
-19. [Running Tests](#19-running-tests)
-20. [Running the Development Server](#20-running-the-development-server)
-21. [API Documentation](#21-api-documentation)
-22. [Deployment Notes](#22-deployment-notes)
-23. [Security Notes](#23-security-notes)
-24. [Team / Contributors](#24-team--contributors)
-25. [License](#25-license)
+1. [Project Overview](#1-project-overview)
+2. [Problem Statement](#2-problem-statement)
+3. [Proposed Solution](#3-proposed-solution)
+4. [Key Features](#4-key-features)
+5. [Architecture](#5-architecture)
+6. [Technology Stack](#6-technology-stack)
+7. [AI/ML Capabilities](#7-aiml-capabilities)
+8. [User Roles](#8-user-roles)
+9. [Civic Categories](#9-civic-categories)
+10. [Complaint Lifecycle](#10-complaint-lifecycle)
+11. [Project Structure](#11-project-structure)
+12. [Installation](#12-installation)
+13. [Backend Setup](#13-backend-setup)
+14. [Frontend Setup](#14-frontend-setup)
+15. [Environment Configuration](#15-environment-configuration)
+16. [Database Configuration](#16-database-configuration)
+17. [AI Model Setup](#17-ai-model-setup)
+18. [Running Tests](#18-running-tests)
+19. [Running the Development Server](#19-running-the-development-server)
+20. [API Documentation](#20-api-documentation)
+21. [Deployment Notes](#21-deployment-notes)
+22. [Security Notes](#22-security-notes)
+23. [Team / Contributors](#23-team--contributors)
+24. [License](#24-license)
 
 ---
 
@@ -354,7 +320,7 @@ cp .env.example .env
 
 For the bundled scikit-learn model artifacts, use the tested Python 3.12 runtime when it is available. The Windows launchers automatically prefer `py -3.12` and fall back to `python`.
 
-For the default SQLite development setup, use:
+Ensure the following variables are configured:
 ```ini
 DJANGO_ENV=development
 DJANGO_SETTINGS_MODULE=config.settings.dev
@@ -362,29 +328,21 @@ SECRET_KEY=your-secure-development-key
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 
-DB_ENGINE=django.db.backends.sqlite3
-DB_NAME=db.sqlite3
+DB_NAME=civicsetu
+DB_USER=root
+DB_PASSWORD=your_mysql_password
+DB_HOST=127.0.0.1
+DB_PORT=3306
 
 CSRF_TRUSTED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173
-
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173
 
 FRONTEND_URL=http://localhost:5173
 ```
 
-For MySQL, set `DB_ENGINE=django.db.backends.mysql` and configure `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT` for the target database.
-
 ---
 
 ## 16. Database Configuration
-
-SQLite is the default development database:
-
-```bash
-python manage.py migrate
-```
-
-To use MySQL instead:
 
 1. Log into MySQL and create the database:
    ```sql
